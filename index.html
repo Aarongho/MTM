@@ -341,6 +341,11 @@ td.r,th.r{text-align:right}
           <h3>Export Database</h3><p>Lihat &amp; rekap data</p>
         </button>
       </div>
+      <button class="lp-card secondary lp-card-full" onclick="go('stok')" style="margin-top:14px">
+        <div class="ic">📦</div>
+        <span class="arrow">→</span>
+        <h3>Stok Barang</h3><p>Catat stok produk harian</p>
+      </button>
       <button class="lp-card danger lp-card-full" onclick="askDelete()">
         <div class="ic">🗑️</div>
         <span class="arrow">→</span>
@@ -460,6 +465,29 @@ td.r,th.r{text-align:right}
   </div>
 </section>
 
+<!-- ============ STOK ============ -->
+<section id="view-stok" class="view">
+  <div class="topbar">
+    <button class="back" onclick="go('home')">← Kembali</button>
+    <span class="brand">Stok Barang</span>
+    <span class="sp"></span>
+    <span id="tgl-stok"></span>
+    <span class="chip" id="chip-stok"></span>
+  </div>
+  <div class="wrap">
+    <div class="pagehead"><h2>Stok Barang</h2><p>Catat jumlah stok tiap produk. Diisi harian, bisa diedit kapan saja.</p></div>
+    <div class="card">
+      <div class="field" style="margin-bottom:12px">
+        <label>Tanggal Stok</label>
+        <button type="button" class="datefield" id="s-date-btn"><span class="df-ic">📅</span><span class="df-val" id="s-date-val">—</span><span class="df-chev">›</span></button>
+        <input type="hidden" id="s-date" />
+      </div>
+      <button class="btn-brand" onclick="loadStok()">Tampilkan Stok Tanggal Ini</button>
+    </div>
+    <div id="stok-report"></div>
+  </div>
+</section>
+
 <!-- ============ DELETE ============ -->
 <section id="view-delete" class="view">
   <div class="topbar">
@@ -547,7 +575,7 @@ function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
 function toast(msg,type){const t=$("#toast");t.className="";t.innerHTML=msg;void t.offsetWidth;t.classList.add("show");if(type)t.classList.add(type);clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2600);}
 
 /* ============ theme ============ */
-function mountToggles(){["#tgl-home","#tgl-input","#tgl-export","#tgl-delete"].forEach(id=>{const h=$(id);if(h&&!h.children.length)h.appendChild($("#tpl-toggle").content.cloneNode(true));});}
+function mountToggles(){["#tgl-home","#tgl-input","#tgl-export","#tgl-delete","#tgl-stok"].forEach(id=>{const h=$(id);if(h&&!h.children.length)h.appendChild($("#tpl-toggle").content.cloneNode(true));});}
 function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('mtm_theme',next);}catch(e){}}
 
 /* ============ access gate ============ */
@@ -595,6 +623,7 @@ function go(name){
   window.scrollTo(0,0);history.replaceState(null,"","#"+name);
   if(name==="export")initExport();
   if(name==="delete")initDelete();
+  if(name==="stok")initStok();
 }
 let _delUnlocked=false;
 function askDelete(){
@@ -609,7 +638,7 @@ window.addEventListener("load",()=>{
   const modeTxt=DB.mode==="cloud"?"☁️ Tersinkron ke cloud — data dibagikan antar perangkat.":"📴 Mode offline (localStorage) — isi firebase-config.js agar tersinkron antar HP.";
   $("#home-mode").textContent=modeTxt;
   const chip=(id)=>{const c=$(id);c.className="chip "+DB.mode;c.textContent=DB.mode==="cloud"?"☁️ Cloud":"📴 Offline";};
-  chip("#chip-input");chip("#chip-export");chip("#chip-delete");
+  chip("#chip-input");chip("#chip-export");chip("#chip-delete");chip("#chip-stok");
   initInput();
   const h=location.hash.replace("#","");if(["input","export"].includes(h))go(h);
   initAuth();
@@ -619,6 +648,7 @@ window.addEventListener("load",()=>{
 function initAuth(){
   if(DB.mode!=="cloud"||typeof firebase==="undefined"||!firebase.auth){$("#login").hidden=true;return;}
   const auth=firebase.auth();
+  try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
   $("#login").hidden=false; // tampilkan sampai status auth diketahui
   auth.onAuthStateChanged(u=>{
     if(u){$("#login").hidden=true;$("#lg-out").hidden=false;$("#lg-pass").value="";}
@@ -752,6 +782,40 @@ async function exportCSV(scope){
   const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=scope==="all"?"maju-terus-semua-data.csv":`maju-terus-${_lastReport.date}.csv`;
   document.body.appendChild(a);a.click();a.remove();toast("✅ File CSV terunduh","ok");
+}
+
+/* ============ STOK BARANG ============ */
+function initStok(){
+  if(!$("#s-date").value)setDateField("#s-date-val","#s-date",todayWIB());
+  $("#s-date-btn").onclick=()=>Wheel.open({title:"Tanggal Stok",date:$("#s-date").value,allowPast:true,onPick:(ds)=>{setDateField("#s-date-val","#s-date",ds);$("#stok-report").innerHTML="";}});
+}
+async function loadStok(){
+  const date=$("#s-date").value;if(!date){toast("⚠️ Pilih tanggal dulu","bad");return;}
+  const rep=$("#stok-report");rep.innerHTML='<div class="card"><div class="loading"><span class="spin" style="border-color:#ccc;border-top-color:#888"></span> Memuat…</div></div>';
+  const saved=(await DB.getStok(date))||{};
+  const prods=(window.PRODUCTS||[]).slice().sort((a,b)=>a.name.localeCompare(b.name,"id"));
+  let rows="";
+  prods.forEach(p=>{
+    const v=saved[p.name];
+    rows+=`<div class="del-row"><div class="d-main"><div class="t">${p.name}</div><div class="s">jumlah stok</div></div><input class="stok-inp" data-name="${p.name.replace(/"/g,'&quot;')}" type="number" min="0" step="1" inputmode="numeric" placeholder="0" value="${v!=null?v:''}" style="width:96px;text-align:right;padding:10px 12px;font-weight:700"></div>`;
+  });
+  rep.innerHTML=`<div class="del-list">${rows}</div>
+    <button class="btn-brand" onclick="saveStok()">💾 Simpan Stok ${tanggalIndo(date)}</button>
+    <div style="text-align:center;color:var(--muted);font-size:12.5px;margin-top:10px">Kosongkan kalau produk tidak dihitung hari itu. Bisa diedit kapan saja.</div>`;
+  rep._date=date;
+}
+async function saveStok(){
+  const date=$("#s-date").value;if(!date)return;
+  const items={};
+  document.querySelectorAll("#stok-report .stok-inp").forEach(inp=>{
+    const val=inp.value.trim();
+    if(val!=="")items[inp.dataset.name]=parseInt(val,10)||0;
+  });
+  const btn=document.querySelector("#stok-report .btn-brand");
+  if(btn){btn.disabled=true;var old=btn.innerHTML;btn.innerHTML='<span class="spin"></span> Menyimpan…';}
+  try{await DB.setStok(date,items);toast("✅ Stok tersimpan","ok");}
+  catch(e){console.error(e);toast("⚠️ Gagal menyimpan stok","bad");}
+  finally{if(btn){btn.disabled=false;btn.innerHTML=old;}}
 }
 
 /* ============ DELETE DATA ============ */

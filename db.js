@@ -44,6 +44,12 @@
     DB.deleteIklan = (date) => fs.collection("iklan").doc(date).delete();
     DB.deleteBulanan = (month) => fs.collection("bulanan").doc(month).delete();
 
+    DB.getStok = async (date) => {
+      const d = await fs.collection("stok").doc(date).get();
+      return d.exists ? (d.data().items || {}) : null;
+    };
+    DB.setStok = (date, items) => fs.collection("stok").doc(date).set({ items, updatedAt: Date.now() });
+
     DB.getIklan = async (date) => {
       const d = await fs.collection("iklan").doc(date).get();
       return d.exists ? d.data().nilai : null;
@@ -97,6 +103,9 @@
     DB.deleteSale = async (id) => { const d = load(); d.sales = d.sales.filter((s) => s.id !== id); save(d); };
     DB.deleteIklan = async (date) => { const d = load(); delete d.iklan[date]; save(d); };
     DB.deleteBulanan = async (month) => { const d = load(); delete d.bulanan[month]; save(d); };
+
+    DB.getStok = async (date) => { const d = load(); return d.stok && d.stok[date] ? d.stok[date] : null; };
+    DB.setStok = async (date, items) => { const d = load(); d.stok = d.stok || {}; d.stok[date] = items; save(d); };
 
     DB.getIklan = async (date) => {
       const d = load();

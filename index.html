@@ -320,6 +320,9 @@ td.r,th.r{text-align:right}
 .btn-google:hover{border-color:var(--brand)}
 .lg-or{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:12px;margin:14px 0}
 .lg-or::before,.lg-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.name-pick{display:grid;gap:10px;margin-top:8px}
+.name-pick button{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:15px;padding:16px;font-weight:800;font-size:16px;cursor:pointer;transition:.15s}
+.name-pick button:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-2px);box-shadow:var(--shadow-sm)}
 .btn-logout{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 14px;font-weight:700;font-size:13px;cursor:pointer}
 .btn-logout:hover{border-color:var(--brand);color:var(--brand)}
 
@@ -497,10 +500,10 @@ body.noshell{padding-bottom:0}
 
       <div class="card">
         <div class="field" style="margin-bottom:0">
-          <label><span class="num">4·5</span>Harga (otomatis dari daftar)</label>
+          <label><span class="num">4·5</span>Harga</label>
           <div class="readout">
-            <div class="box"><div class="lbl">Harga Jual /unit</div><div class="val" id="out-jual">—</div></div>
-            <div class="box"><div class="lbl">Harga Beli /unit</div><div class="val" id="out-beli">—</div></div>
+            <div class="box"><div class="lbl">Harga Jual /unit <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Terisi <b>otomatis</b> dari daftar harga, sesuai produk, toko &amp; jenis yang dipilih. (Offline diisi manual.)</span></button></div><div class="val" id="out-jual">—</div></div>
+            <div class="box"><div class="lbl">Harga Beli /unit <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Terisi <b>otomatis</b> dari daftar (harga modal), sesuai produk &amp; jenis yang dipilih.</span></button></div><div class="val" id="out-beli">—</div></div>
           </div>
           <div class="field" id="wrap-jual-offline" style="display:none;margin:16px 0 0">
             <label>Harga Jual /unit <span class="hint">— isi manual (Offline)</span></label>
@@ -751,6 +754,20 @@ body.noshell{padding-bottom:0}
   <button class="navdesk btn-logout" id="nav-logout" hidden onclick="logout()" style="width:100%">Keluar</button>
 </nav>
 
+<!-- pilih nama inputter (wajib, setelah login) -->
+<div class="loginwrap" id="namemodal" hidden>
+  <div class="login-card">
+    <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15L12 8l3 3 4-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h4v4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    <h2>Kamu siapa?</h2>
+    <p>Pilih namamu untuk mulai. Nama ini otomatis jadi <b>Inputter</b> di setiap transaksi.</p>
+    <div class="name-pick">
+      <button onclick="pickName('Ailen')">Ailen</button>
+      <button onclick="pickName('Gunawan')">Gunawan</button>
+      <button onclick="pickName('Ahwang')">Ahwang</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -787,7 +804,9 @@ function toggleTheme(){const cur=document.documentElement.getAttribute('data-the
 const INPUTTERS=["Ailen","Gunawan","Ahwang"];
 function getInputter(){try{return localStorage.getItem("mtm_inputter")||"";}catch(e){return"";}}
 function setInputter(n){try{localStorage.setItem("mtm_inputter",n);}catch(e){}renderGreet();const s=$("#f-inputter");if(s)s.value=n;}
-function changeInputter(){try{localStorage.removeItem("mtm_inputter");}catch(e){}renderGreet();}
+function changeInputter(){try{localStorage.removeItem("mtm_inputter");}catch(e){}renderGreet();$("#namemodal").hidden=false;}
+function maybeAskName(){if(!getInputter())$("#namemodal").hidden=false;}
+function pickName(n){setInputter(n);$("#namemodal").hidden=true;toast("Halo "+n+"! 👋","ok");}
 function renderGreet(){
   const g=$("#greet");if(!g)return;const n=getInputter();
   if(!n){g.innerHTML=`<div class="greet-ask">Kamu siapa hari ini? 👋</div><div class="greet-pick">${INPUTTERS.map(x=>`<button onclick="setInputter('${x}')">${x}</button>`).join("")}</div>`;}
@@ -866,13 +885,14 @@ window.addEventListener("load",()=>{
 
 /* ============ AUTH (login email/password, mode cloud) ============ */
 function initAuth(){
-  if(DB.mode!=="cloud"||typeof firebase==="undefined"||!firebase.auth){$("#login").hidden=true;return;}
+  if(DB.mode!=="cloud"||typeof firebase==="undefined"||!firebase.auth){$("#login").hidden=true;maybeAskName();return;}
   const auth=firebase.auth();
   try{auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);}catch(e){}
+  try{auth.getRedirectResult().catch(()=>{});}catch(e){}
   $("#login").hidden=false; // tampilkan sampai status auth diketahui
   auth.onAuthStateChanged(u=>{
-    if(u){$("#login").hidden=true;$("#lg-out").hidden=false;$("#nav-logout").hidden=false;document.body.classList.remove("noshell");$("#lg-pass").value="";}
-    else{$("#login").hidden=false;$("#lg-out").hidden=true;$("#nav-logout").hidden=true;document.body.classList.add("noshell");}
+    if(u){$("#login").hidden=true;$("#lg-out").hidden=false;$("#nav-logout").hidden=false;document.body.classList.remove("noshell");$("#lg-pass").value="";maybeAskName();}
+    else{$("#login").hidden=false;$("#namemodal").hidden=true;$("#lg-out").hidden=true;$("#nav-logout").hidden=true;document.body.classList.add("noshell");}
   });
   $("#lg-pass").addEventListener("keydown",e=>{if(e.key==="Enter")doLogin();});
   $("#lg-email").addEventListener("keydown",e=>{if(e.key==="Enter")$("#lg-pass").focus();});
@@ -888,11 +908,14 @@ async function doLogin(){
 }
 function loginGoogle(){
   const err=$("#lg-err");err.className="err";err.style.textAlign="center";
+  const showErr=(ex)=>{const m={'auth/unauthorized-domain':'Domain website belum diizinkan di Firebase (tambahkan aarongho.github.io di Authentication → Settings → Authorized domains).','auth/operation-not-allowed':'Google sign-in belum diaktifkan di Firebase.'}[ex.code]||('Gagal masuk: '+(ex.message||ex.code));err.textContent=m;err.classList.add("show");};
   try{
-    const prov=new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(prov).catch(ex=>{
-      const m={'auth/unauthorized-domain':'Domain website belum diizinkan di Firebase (tambahkan aarongho.github.io di Authentication → Settings → Authorized domains).','auth/popup-blocked':'Popup diblokir browser — izinkan popup lalu coba lagi.','auth/popup-closed-by-user':'Jendela Google ditutup sebelum selesai.','auth/operation-not-allowed':'Google sign-in belum diaktifkan di Firebase.'}[ex.code]||('Gagal masuk: '+(ex.message||ex.code));
-      err.textContent=m;err.classList.add("show");
+    const auth=firebase.auth();const prov=new firebase.auth.GoogleAuthProvider();
+    const isMobile=matchMedia("(max-width:768px)").matches;
+    if(isMobile){auth.signInWithRedirect(prov).catch(showErr);return;}
+    auth.signInWithPopup(prov).catch(ex=>{
+      if(["auth/popup-blocked","auth/cancelled-popup-request","auth/popup-closed-by-user","auth/operation-not-supported-in-this-environment"].includes(ex.code)){auth.signInWithRedirect(prov).catch(showErr);return;}
+      showErr(ex);
     });
   }catch(e){err.textContent="Google sign-in belum siap. Coba muat ulang halaman.";err.classList.add("show");}
 }

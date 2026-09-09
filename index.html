@@ -110,6 +110,17 @@ button{font-family:inherit}
 .hero-title{font-size:clamp(40px,10vw,68px);line-height:1.02;font-weight:800;margin:0 0 20px;letter-spacing:-.03em}
 .hero-title .g{background:linear-gradient(100deg,var(--brand),var(--brand-2) 55%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero-sub{font-size:clamp(15px,3.6vw,18px);color:var(--muted);margin:0 0 38px;max-width:460px}
+.hero-greet{margin:4px 0 34px;min-height:48px}
+.greet-hi{font-size:clamp(19px,5vw,24px);font-weight:800;letter-spacing:-.02em}
+.greet-hi b{background:linear-gradient(100deg,var(--brand),var(--brand-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.greet-sub{font-size:clamp(14px,3.4vw,16px);color:var(--muted);margin-top:4px}
+.greet-change{border:none;background:var(--brand-soft);color:var(--brand);border-radius:999px;padding:3px 11px;font-weight:700;font-size:12px;cursor:pointer;margin-left:5px}
+.greet-ask{font-size:16px;font-weight:800;margin-bottom:11px}
+.greet-pick{display:flex;gap:9px;flex-wrap:wrap}
+.greet-pick button{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:13px;padding:11px 20px;font-weight:800;cursor:pointer;font-size:14.5px;transition:.15s;box-shadow:var(--shadow-sm)}
+.greet-pick button:hover{border-color:var(--brand);color:var(--brand);transform:translateY(-2px)}
+.lp-logout{border:none;background:transparent;color:var(--faint);font-weight:700;font-size:12.5px;cursor:pointer;text-decoration:underline;padding:0 4px}
+.lp-logout:hover{color:var(--danger)}
 .lp-cards{display:grid;gap:14px;grid-template-columns:1fr 1fr}
 @media(max-width:540px){.lp-cards{grid-template-columns:1fr}}
 .lp-card{position:relative;text-align:left;color:var(--ink);border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);padding:22px 20px;cursor:pointer;overflow:hidden;box-shadow:var(--shadow-sm);transition:transform .2s ease,box-shadow .2s ease,background-color .45s,border-color .45s,color .3s}
@@ -239,8 +250,11 @@ td.r,th.r{text-align:right}
 .sheet-grip{width:40px;height:4px;border-radius:99px;background:var(--line);margin:6px auto 10px}
 .sheet-head{text-align:center;font-weight:800;font-size:16px;margin-bottom:6px}
 .sheet-sub{text-align:center;color:var(--muted);font-size:12.5px;margin-bottom:8px}
-.wheels{position:relative;display:grid;grid-template-columns:1fr 1.3fr 1.1fr;gap:6px;height:210px;margin:4px 0 6px}
-.wheel-highlight{position:absolute;left:4px;right:4px;top:50%;transform:translateY(-50%);height:44px;background:var(--brand-soft);border-radius:14px;z-index:0;pointer-events:none}
+.wheel-heads{display:grid;grid-template-columns:1fr 1.3fr 1.1fr;gap:6px;text-align:center;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);margin:2px 4px 2px}
+.wheels{position:relative;display:grid;grid-template-columns:1fr 1.3fr 1.1fr;gap:6px;height:210px;margin:2px 0 6px}
+.wheel-highlight{position:absolute;left:4px;right:4px;top:50%;transform:translateY(-50%);height:44px;background:var(--brand-soft);border-radius:13px;z-index:0;pointer-events:none;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--brand) 32%,transparent)}
+.wchev{position:absolute;left:0;right:0;text-align:center;color:var(--brand);font-size:20px;font-weight:900;line-height:1;pointer-events:none;opacity:.5;z-index:2}
+.wchev.up{top:2px}.wchev.dn{bottom:2px}
 .wheel{position:relative;z-index:1;height:210px;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;
   -webkit-mask:linear-gradient(180deg,transparent,#000 32%,#000 68%,transparent);mask:linear-gradient(180deg,transparent,#000 32%,#000 68%,transparent)}
 .wheel::-webkit-scrollbar{display:none}
@@ -400,13 +414,12 @@ body.noshell{padding-bottom:0}
       <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15L12 8l3 3 4-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h4v4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
       <span class="wm">Maju Terus Maju</span>
       <span class="sp"></span>
-      <button id="lg-out" class="btn-logout" hidden onclick="logout()">Keluar</button>
       <span id="tgl-home"></span>
     </div>
     <div class="lp-main">
       <span class="kicker"><span class="dot"></span>Sistem Penjualan</span>
       <h1 class="hero-title">Kelola penjualan,<br><span class="g">maju terus maju.</span></h1>
-      <p class="hero-sub">Catat penjualan harian dan pantau laba bersih tokomu — rapi, cepat, dari HP mana saja.</p>
+      <div id="greet" class="hero-greet"></div>
       <button class="lp-card primary lp-card-full" onclick="go('dashboard')" style="margin-bottom:14px">
         <div class="ic">📈</div>
         <span class="arrow">→</span>
@@ -435,7 +448,7 @@ body.noshell{padding-bottom:0}
         <h3>Hapus Data</h3><p>Perlu password • hati-hati, tidak bisa dibatalkan</p>
       </button>
     </div>
-    <div class="lp-foot" id="home-mode"></div>
+    <div class="lp-foot"><span id="home-mode"></span> <button class="lp-logout" id="lg-out" hidden onclick="logout()">Keluar</button></div>
   </div>
 </section>
 
@@ -458,7 +471,7 @@ body.noshell{padding-bottom:0}
     <form id="form" novalidate>
       <div class="card">
         <div class="field">
-          <label><span class="num">1</span>Tanggal <span class="hint">— default hari ini (WIB)</span></label>
+          <label><span class="num">1</span>Tanggal</label>
           <button type="button" class="datefield" id="f-date-btn">
             <span class="df-ic">📅</span><span class="df-val" id="f-date-val">—</span><span class="df-chev">›</span>
           </button>
@@ -500,6 +513,10 @@ body.noshell{padding-bottom:0}
         <div class="field">
           <label><span class="num">6</span>Pengambil Barang</label>
           <select id="f-pengambil" required><option value="">— Pilih pengambil —</option><option>Majir</option><option>Gunawan</option><option>Ailen</option><option>Minfo</option></select>
+        </div>
+        <div class="field">
+          <label><span class="num">👤</span>Inputter <span class="hint">— yang mengisi</span></label>
+          <select id="f-inputter" required><option value="">— Pilih inputter —</option></select>
         </div>
         <div class="field">
           <label><span class="num">8</span>Jumlah Produk <span class="hint" id="jml-hint"></span></label>
@@ -687,11 +704,14 @@ body.noshell{padding-bottom:0}
     <div class="sheet-grip"></div>
     <div class="sheet-head" id="sheet-head">Pilih Tanggal</div>
     <div class="sheet-sub" id="sheet-sub"></div>
+    <div class="wheel-heads"><span>Tanggal</span><span>Bulan</span><span>Tahun</span></div>
     <div class="wheels">
+      <div class="wchev up">⌃</div>
       <div class="wheel-highlight"></div>
       <div class="wheel" id="w-day"></div>
       <div class="wheel" id="w-mon"></div>
       <div class="wheel" id="w-year"></div>
+      <div class="wchev dn">⌄</div>
     </div>
     <div class="sheet-actions">
       <button onclick="Wheel.close()">Batal</button>
@@ -763,6 +783,17 @@ function tipToggle(el,ev){ev.stopPropagation();const open=el.classList.contains(
 document.addEventListener("click",()=>document.querySelectorAll(".info.show").forEach(x=>x.classList.remove("show")));
 function toggleTheme(){const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';const next=cur==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('mtm_theme',next);}catch(e){}}
 
+/* inputter (siapa yang mengisi) + sapaan */
+const INPUTTERS=["Ailen","Gunawan","Ahwang"];
+function getInputter(){try{return localStorage.getItem("mtm_inputter")||"";}catch(e){return"";}}
+function setInputter(n){try{localStorage.setItem("mtm_inputter",n);}catch(e){}renderGreet();const s=$("#f-inputter");if(s)s.value=n;}
+function changeInputter(){try{localStorage.removeItem("mtm_inputter");}catch(e){}renderGreet();}
+function renderGreet(){
+  const g=$("#greet");if(!g)return;const n=getInputter();
+  if(!n){g.innerHTML=`<div class="greet-ask">Kamu siapa hari ini? 👋</div><div class="greet-pick">${INPUTTERS.map(x=>`<button onclick="setInputter('${x}')">${x}</button>`).join("")}</div>`;}
+  else{g.innerHTML=`<div class="greet-hi">Hai <b>${n}</b> 👋</div><div class="greet-sub">Fitur apa yang mau dikunjungi hari ini?<button class="greet-change" onclick="changeInputter()">ganti</button></div>`;}
+}
+
 /* ============ access gate ============ */
 (function(){const code=window.APP_ACCESS_CODE;if(!code)return;if(sessionStorage.getItem("mtm_gate")===code)return;const v=prompt("Masukkan kode akses:");if(v===code)sessionStorage.setItem("mtm_gate",code);else{document.body.innerHTML='<div style="padding:40px;text-align:center">Kode akses salah. Muat ulang untuk coba lagi.</div>';throw new Error("gate");}})();
 
@@ -826,7 +857,7 @@ window.addEventListener("load",()=>{
   $("#home-mode").textContent=modeTxt;
   const chip=(id)=>{const c=$(id);c.className="chip "+DB.mode;c.textContent=DB.mode==="cloud"?"☁️ Cloud":"📴 Offline";};
   chip("#chip-input");chip("#chip-export");chip("#chip-delete");chip("#chip-stok");chip("#chip-dashboard");
-  initInput();
+  initInput();renderGreet();
   const h=location.hash.replace("#","");
   if(["input","export","dashboard","stok"].includes(h))go(h);
   else document.querySelector('#nav a[data-v="home"]').classList.add("on");
@@ -878,6 +909,7 @@ function initInput(){
   const opts=(window.PRODUCTS||[]).slice().sort((a,b)=>a.name.localeCompare(b.name,"id"));
   opts.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;sel.appendChild(o);});
   const ik=$("#ik-produk");opts.forEach(p=>{const o=document.createElement("option");o.value=p.name;o.textContent=p.name;ik.appendChild(o);});
+  const inp=$("#f-inputter");INPUTTERS.forEach(x=>{const o=document.createElement("option");o.textContent=x;inp.appendChild(o);});inp.value=getInputter();
   wireStokConv("#ik-jumlah","#ik-produk","#ik-satuan","#ik-conv");
   setDateField("#f-date-val","#f-date",todayWIB());
   $("#f-date-btn").addEventListener("click",()=>Wheel.open({title:"Tanggal Input",date:$("#f-date").value,allowPast:false,onPick:(ds)=>setDateField("#f-date-val","#f-date",ds)}));
@@ -908,7 +940,7 @@ async function submitSale(e){
   e.preventDefault();const err=$("#form-err");err.className="err";const btn=$("#btn-submit");
   const tanggal=$("#f-date").value,nama=$("#f-produk").value,toko=$("#f-toko").value;
   const jenis=(document.querySelector('input[name="jenis"]:checked')||{}).value;
-  const pengambil=$("#f-pengambil").value,jumlah=digits($("#f-jumlah").value),v=currentVariant();
+  const pengambil=$("#f-pengambil").value,inputter=$("#f-inputter").value,jumlah=digits($("#f-jumlah").value),v=currentVariant();
   const fail=(m)=>{err.textContent=m;err.classList.add("show");toast("⚠️ "+m,"bad");};
   if(!tanggal)return fail("Tanggal wajib diisi.");
   if(tanggal<todayWIB())return fail("Tidak bisa input tanggal lampau.");
@@ -916,6 +948,7 @@ async function submitSale(e){
   if(!toko)return fail("Pilih toko.");
   if(!jenis)return fail("Pilih jenis produk (Roll/Pack/Dus).");
   if(!pengambil)return fail("Pilih pengambil barang.");
+  if(!inputter)return fail("Pilih inputter (kamu siapa).");
   if(!jumlah||jumlah<1)return fail("Jumlah produk harus lebih dari 0.");
   if(jenis==="Roll"&&jumlah<10)return fail("Untuk Roll, jumlah minimal 10 roll.");
   let hargaJual;
@@ -923,7 +956,7 @@ async function submitSale(e){
   const hargaBeli=v.hargaBeli,modal=hargaBeli*jumlah;let hargaSetelahPotongan,labaKotor;
   if(toko==="Tokopedia"){hargaSetelahPotongan=digits($("#f-potongan").value);if(!hargaSetelahPotongan)return fail("Isi Harga Setelah Potongan untuk Tokopedia.");labaKotor=hargaSetelahPotongan-modal;}
   else{hargaSetelahPotongan=hargaJual*jumlah;labaKotor=hargaJual*jumlah-modal;}
-  const row={tanggal,namaProduk:nama,toko,jenisProduk:jenis,jumlah,hargaJual,hargaBeli,hargaSetelahPotongan,pengambil,labaKotor};
+  const row={tanggal,namaProduk:nama,toko,jenisProduk:jenis,jumlah,hargaJual,hargaBeli,hargaSetelahPotongan,pengambil,inputter,labaKotor};
   btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span> Menyimpan…';
   try{await DB.addSale(row);toast("✅ Penjualan tersimpan!","ok");$("#f-produk").value="";$("#f-jumlah").value="";$("#f-potongan").value="";$("#f-jual-manual").value="";document.querySelectorAll('input[name="jenis"]').forEach(r=>r.checked=false);$("#f-pengambil").value="";refreshPrices();}
   catch(ex){console.error(ex);fail("Gagal menyimpan. Cek koneksi / konfigurasi Firebase.");}
@@ -958,8 +991,8 @@ async function loadReport(){
   if(!rows.length){rep.innerHTML=`<div class="card"><div class="empty"><span class="ic">🗒️</span>Belum ada data untuk ${tanggalIndo(date)}.<br>Input dulu lewat menu Input Data.</div></div>`;return;}
   const totalLaba=rows.reduce((s,r)=>s+(r.labaKotor||0),0);
   const labaBersih=totalLaba-iklan-wrapH-plasH-lakH;
-  let body="";rows.forEach(r=>{const cls=(r.labaKotor>=0)?"laba-pos":"laba-neg";body+=`<tr><td>${tanggalIndo(r.tanggal)}</td><td>${r.namaProduk}</td><td><span class="badge ${r.toko}">${r.toko}</span></td><td class="r">${rp(r.hargaJual)}</td><td class="r">${rp(r.hargaBeli)}</td><td>${r.jenisProduk}</td><td class="r">${(r.jumlah||0).toLocaleString("id-ID")}</td><td>${r.pengambil}</td><td class="r">${rp(r.hargaSetelahPotongan)}</td><td class="r ${cls}">${rp(r.labaKotor)}</td></tr>`;});
-  rep.innerHTML=`<div class="table-scroll"><table><thead><tr><th>Input Date</th><th>Nama Produk</th><th>Toko Online</th><th class="r">Harga Jual</th><th class="r">Harga Beli</th><th>Jenis Produk</th><th class="r">Jumlah</th><th>Pengambil</th><th class="r">Stlh Potongan</th><th class="r">Laba Kotor</th></tr></thead><tbody>${body}</tbody></table></div>
+  let body="";rows.forEach(r=>{const cls=(r.labaKotor>=0)?"laba-pos":"laba-neg";body+=`<tr><td>${tanggalIndo(r.tanggal)}</td><td>${r.namaProduk}</td><td><span class="badge ${r.toko}">${r.toko}</span></td><td class="r">${rp(r.hargaJual)}</td><td class="r">${rp(r.hargaBeli)}</td><td>${r.jenisProduk}</td><td class="r">${(r.jumlah||0).toLocaleString("id-ID")}</td><td>${r.pengambil}</td><td>${r.inputter||'-'}</td><td class="r">${rp(r.hargaSetelahPotongan)}</td><td class="r ${cls}">${rp(r.labaKotor)}</td></tr>`;});
+  rep.innerHTML=`<div class="table-scroll"><table><thead><tr><th>Input Date</th><th>Nama Produk</th><th>Toko Online</th><th class="r">Harga Jual</th><th class="r">Harga Beli</th><th>Jenis Produk</th><th class="r">Jumlah</th><th>Pengambil</th><th>Inputter</th><th class="r">Stlh Potongan</th><th class="r">Laba Kotor</th></tr></thead><tbody>${body}</tbody></table></div>
   <div class="summary">
     <div class="srow"><span class="lbl">Total Penjualan (Σ Laba Kotor)</span><span class="amt">${rp(totalLaba)}</span></div>
     <div class="srow minus"><span class="lbl">Biaya Iklan (hari ini)</span><span class="amt">− ${rp(iklan)}</span></div>
@@ -973,9 +1006,9 @@ async function loadReport(){
 async function exportCSV(scope){
   const rows=scope==="all"?await DB.getAllSales():(_lastReport?_lastReport.rows:[]);
   if(!rows.length){toast("⚠️ Tidak ada data","bad");return;}
-  const head=["Input Date","Nama Produk","Toko Online","Harga Jual","Harga Beli","Jenis Produk","Jumlah Produk","Pengambil Barang","Harga Setelah Potongan","Laba Kotor"];
+  const head=["Input Date","Nama Produk","Toko Online","Harga Jual","Harga Beli","Jenis Produk","Jumlah Produk","Pengambil Barang","Inputter","Harga Setelah Potongan","Laba Kotor"];
   const esc=(x)=>{const s=String(x==null?"":x);return /[",\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;};
-  const lines=[head.join(",")];rows.forEach(r=>lines.push([r.tanggal,r.namaProduk,r.toko,r.hargaJual,r.hargaBeli,r.jenisProduk,r.jumlah,r.pengambil,r.hargaSetelahPotongan,r.labaKotor].map(esc).join(",")));
+  const lines=[head.join(",")];rows.forEach(r=>lines.push([r.tanggal,r.namaProduk,r.toko,r.hargaJual,r.hargaBeli,r.jenisProduk,r.jumlah,r.pengambil,r.inputter,r.hargaSetelahPotongan,r.labaKotor].map(esc).join(",")));
   const blob=new Blob(["﻿"+lines.join("\r\n")],{type:"text/csv;charset=utf-8"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=scope==="all"?"maju-terus-semua-data.csv":`maju-terus-${_lastReport.date}.csv`;
   document.body.appendChild(a);a.click();a.remove();toast("✅ File CSV terunduh","ok");

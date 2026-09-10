@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>Maju Terus Maju</title>
+<link rel="icon" type="image/png" href="assets/logo-icon.png" />
+<link rel="apple-touch-icon" href="assets/logo-icon.png" />
 <script>
   // set tema sebelum render (hindari kedip)
   try{ var _t=localStorage.getItem('mtm_theme'); if(_t) document.documentElement.setAttribute('data-theme',_t);
@@ -85,7 +87,7 @@ button{font-family:inherit}
 .back{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 15px;font-weight:600;font-size:14px;cursor:pointer}
 .back:hover{transform:translateX(-2px)}
 .topbar .brand{font-weight:700;font-size:15.5px}
-.topbar .sp{margin-left:auto}
+.topbar .sp,.lp-top .sp{margin-left:auto}
 .chip{font-size:11.5px;font-weight:700;padding:5px 11px;border-radius:999px}
 .chip.cloud{background:var(--ok-soft);color:var(--ok)}
 .chip.local{background:#fef3c7;color:#92400e}
@@ -272,6 +274,13 @@ td.r,th.r{text-align:right}
 .info .tip::after{content:"";position:absolute;top:100%;left:50%;transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--surface)}
 .info:hover .tip,.info:focus .tip,.info.show .tip{opacity:1;transform:translateX(-50%) translateY(0) scale(1);pointer-events:auto}
 .info .tip b{color:var(--brand)}
+.info .tip{z-index:120}
+.pagehead{position:relative;z-index:1}
+.pagehead:has(.info:hover),.pagehead:has(.info.show){z-index:120}
+.card:has(.info:hover),.card:has(.info.show){position:relative;z-index:120}
+.pagehead h2 .info{width:20px;height:20px;font-size:12px;transform:translateY(-3px)}
+.pagehead .info .tip{bottom:auto;top:calc(100% + 10px)}
+.pagehead .info .tip::after{top:auto;bottom:100%;border-top-color:transparent;border-bottom-color:var(--surface)}
 
 /* ---------- dashboard ---------- */
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:15px}
@@ -363,6 +372,30 @@ body.noshell{padding-bottom:0}
 #toast.ok{background:#0f7a3d}#toast.bad{background:#b3282d}
 .spin{display:inline-block;width:15px;height:15px;border:2.5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
+
+/* ===== brand refresh: logo, palet biru, tombol elegan, brand ketik ===== */
+:root{--brand:#2f6fed;--brand-2:#5b90f5;--brand-soft:#e9f1ff;--brand-soft-2:#dbe8ff}
+:root:not([data-theme="light"]){}
+[data-theme="dark"]{--brand:#5b93f7;--brand-2:#86b0fb;--brand-soft:#17274d;--brand-soft-2:#1e3a6e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#5b93f7;--brand-2:#86b0fb;--brand-soft:#17274d;--brand-soft-2:#1e3a6e}}
+.hero-title .g,.greet-hi b{background:linear-gradient(100deg,var(--brand),var(--brand-2) 60%,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+/* logo tile (menggantikan mark bawaan) */
+.mark{background:#ffffff !important;box-shadow:0 7px 18px -9px rgba(20,50,110,.4) !important;position:relative;overflow:hidden;border:1px solid rgba(20,50,110,.08)}
+.mark svg{display:none !important}
+.mark::after{content:"";position:absolute;inset:2px;background:url('data:image/png;base64,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') center/contain no-repeat}
+/* brand di pojok kiri atas + animasi ketik */
+.brandlogo{display:flex;align-items:center;gap:9px;min-width:0}
+.mark-sm{width:30px;height:30px;border-radius:9px;flex:0 0 auto}
+.typed{font-weight:800;font-size:15.5px;letter-spacing:-.01em;white-space:nowrap;color:var(--ink)}
+.typed::after{content:"";display:inline-block;width:2px;height:.95em;background:var(--brand);margin-left:2px;vertical-align:-1px;border-radius:2px;animation:caretblink 1.05s steps(1) infinite}
+@keyframes caretblink{50%{opacity:0}}
+/* tombol lebih elegan */
+.btn-brand{border-radius:16px;box-shadow:0 13px 28px -12px var(--brand),inset 0 1px 0 rgba(255,255,255,.28)}
+.btn-brand:active{transform:translateY(1px)}
+.btn-danger{border-radius:16px}
+.lp-card{border-radius:22px}
+.datefield{border-radius:16px}
+
 </style>
 </head>
 <body>
@@ -415,7 +448,7 @@ body.noshell{padding-bottom:0}
     <div class="lp-glow g1"></div><div class="lp-glow g2"></div>
     <div class="lp-top">
       <span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15L12 8l3 3 4-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h4v4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-      <span class="wm">Maju Terus Maju</span>
+      <span class="wm typed">Maju Terus Maju</span>
       <span class="sp"></span>
       <span id="tgl-home"></span>
     </div>
@@ -426,29 +459,29 @@ body.noshell{padding-bottom:0}
       <button class="lp-card primary lp-card-full" onclick="go('dashboard')" style="margin-bottom:14px">
         <div class="ic">📈</div>
         <span class="arrow">→</span>
-        <h3>Dashboard</h3><p>Ringkasan & laba bersih — live update</p>
+        <h3>Dashboard</h3>
       </button>
       <div class="lp-cards">
         <button class="lp-card secondary" onclick="go('input')">
           <div class="ic">📝</div>
           <span class="arrow">→</span>
-          <h3>Input Data</h3><p>Catat penjualan baru</p>
+          <h3>Input Data</h3>
         </button>
         <button class="lp-card secondary" onclick="go('export')">
           <div class="ic">📊</div>
           <span class="arrow">→</span>
-          <h3>Export Database</h3><p>Lihat &amp; rekap data</p>
+          <h3>Export Database</h3>
         </button>
       </div>
       <button class="lp-card secondary lp-card-full" onclick="go('stok')" style="margin-top:14px">
         <div class="ic">📦</div>
         <span class="arrow">→</span>
-        <h3>Stok Barang</h3><p>Catat stok produk harian</p>
+        <h3>Stok Barang</h3>
       </button>
       <button class="lp-card danger lp-card-full" onclick="askDelete()">
         <div class="ic">🗑️</div>
         <span class="arrow">→</span>
-        <h3>Hapus Data</h3><p>Perlu password • hati-hati, tidak bisa dibatalkan</p>
+        <h3>Hapus Data</h3>
       </button>
     </div>
     <div class="lp-foot"><span id="home-mode"></span> <button class="lp-logout" id="lg-out" hidden onclick="logout()">Keluar</button></div>
@@ -459,13 +492,13 @@ body.noshell{padding-bottom:0}
 <section id="view-input" class="view">
   <div class="topbar">
     <button class="back" onclick="go('home')">← Kembali</button>
-    <span class="brand">Input Data</span>
+    <span class="brandlogo"><span class="mark mark-sm"></span><span class="typed">Maju Terus Maju</span></span>
     <span class="sp"></span>
     <span id="tgl-input"></span>
     <span class="chip" id="chip-input"></span>
   </div>
   <div class="wrap">
-    <div class="pagehead"><h2>Input Data</h2><p>Catat transaksi penjualan, atau isi stok masuk barang.</p></div>
+    <div class="pagehead"><h2>Input Data <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Catat <b>transaksi penjualan</b> (tab Transaksi) atau isi <b>stok masuk</b> barang (tab Stok Masuk). Harga jual & beli terisi otomatis dari daftar.</span></button></h2></div>
     <div class="tabs" id="input-tabs">
       <button class="on" data-tab="transaksi" onclick="inputTab('transaksi')">🧾 Transaksi</button>
       <button data-tab="stok" onclick="inputTab('stok')">📦 Stok Masuk</button>
@@ -506,7 +539,7 @@ body.noshell{padding-bottom:0}
             <div class="box"><div class="lbl">Harga Beli /unit <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Terisi <b>otomatis</b> dari daftar (harga modal), sesuai produk &amp; jenis yang dipilih.</span></button></div><div class="val" id="out-beli">—</div></div>
           </div>
           <div class="field" id="wrap-jual-offline" style="display:none;margin:16px 0 0">
-            <label>Harga Jual /unit <span class="hint">— isi manual (Offline)</span></label>
+            <label>Harga Jual /unit <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Khusus <b>Offline</b>: harga jual diisi manual karena harganya bisa beda-beda.</span></button></label>
             <input type="text" id="f-jual-manual" inputmode="numeric" placeholder="cth 5.000" />
           </div>
         </div>
@@ -518,7 +551,7 @@ body.noshell{padding-bottom:0}
           <select id="f-pengambil" required><option value="">— Pilih pengambil —</option><option>Majir</option><option>Gunawan</option><option>Ailen</option><option>Minfo</option></select>
         </div>
         <div class="field">
-          <label><span class="num">👤</span>Inputter <span class="hint">— yang mengisi</span></label>
+          <label><span class="num">👤</span>Inputter <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Siapa yang <b>mengisi</b> transaksi ini. Otomatis sesuai nama yang kamu pilih saat masuk aplikasi.</span></button></label>
           <select id="f-inputter" required><option value="">— Pilih inputter —</option></select>
         </div>
         <div class="field">
@@ -526,7 +559,7 @@ body.noshell{padding-bottom:0}
           <input type="number" id="f-jumlah" min="1" step="1" inputmode="numeric" placeholder="0" required />
         </div>
         <div class="field" style="margin-bottom:0">
-          <label><span class="num">9</span>Harga Setelah Potongan <span class="hint">— total diterima</span></label>
+          <label><span class="num">9</span>Harga Setelah Potongan <button class="info" onclick="tipToggle(this,event)">?<span class="tip"><b>Total uang diterima</b> setelah potongan admin/pajak. Tokopedia: isi manual. Shopee/Offline: otomatis = harga jual × jumlah.</span></button></label>
           <input type="text" id="f-potongan" inputmode="numeric" placeholder="cth 45.000" />
           <div class="locked-note" id="potongan-note"></div>
         </div>
@@ -567,23 +600,22 @@ body.noshell{padding-bottom:0}
 <section id="view-export" class="view">
   <div class="topbar">
     <button class="back" onclick="go('home')">← Kembali</button>
-    <span class="brand">Export Database</span>
+    <span class="brandlogo"><span class="mark mark-sm"></span><span class="typed">Maju Terus Maju</span></span>
     <span class="sp"></span>
     <span id="tgl-export"></span>
     <span class="chip" id="chip-export"></span>
   </div>
   <div class="wrap">
-    <div class="pagehead"><h2>Database Penjualan</h2><p>Set biaya operasional, lalu pilih tanggal untuk melihat rekap &amp; laba bersih.</p></div>
+    <div class="pagehead"><h2>Database Penjualan <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Set biaya operasional (iklan/packing), lalu pilih tanggal untuk lihat <b>rekap penjualan</b> & <b>laba bersih</b> hari itu. Bisa di-export ke Excel/CSV.</span></button></h2></div>
     <div class="card">
       <div class="field" style="margin-bottom:16px">
-        <label>Biaya Iklan <span class="hint">— per hari, sekali set tidak bisa diubah</span></label>
+        <label>Biaya Iklan <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Biaya iklan <b>per hari</b>. Sekali di-set & dikunci tidak bisa diubah (kalau salah, reset lewat menu Hapus Data).</span></button></label>
         <div id="iklan-slot"></div>
       </div>
       <div class="money-grid">
-        <div class="field mini" style="margin:0"><label>Biaya Wrapping <span class="hint">/bln</span></label><div id="wrapping-slot"></div></div>
-        <div class="field mini" style="margin:0"><label>Biaya Plastik <span class="hint">/bln</span></label><div id="plastik-slot"></div></div>
-        <div class="field mini" style="margin:0"><label>Biaya Lakban <span class="hint">/bln</span></label><div id="lakban-slot"></div></div>
-        <div class="field mini" style="margin:0;display:flex;align-items:flex-end"><div style="font-size:12px;color:var(--muted)">Biaya bulanan dibagi rata ke jumlah hari dalam bulan untuk laba bersih harian.</div></div>
+        <div class="field mini" style="margin:0"><label>Biaya Wrapping <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Biaya wrapping <b>per bulan</b>. Sekali set & dikunci. Untuk laba bersih harian, dibagi rata ke jumlah hari dalam bulan.</span></button></label><div id="wrapping-slot"></div></div>
+        <div class="field mini" style="margin:0"><label>Biaya Plastik <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Biaya plastik <b>per bulan</b>. Sekali set & dikunci, dibagi rata per hari untuk laba bersih.</span></button></label><div id="plastik-slot"></div></div>
+        <div class="field mini" style="margin:0"><label>Biaya Lakban <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Biaya lakban <b>per bulan</b>. Sekali set & dikunci, dibagi rata per hari untuk laba bersih.</span></button></label><div id="lakban-slot"></div></div>
       </div>
     </div>
     <div class="card">
@@ -602,13 +634,13 @@ body.noshell{padding-bottom:0}
 <section id="view-dashboard" class="view">
   <div class="topbar">
     <button class="back" onclick="go('home')">← Kembali</button>
-    <span class="brand">Dashboard</span>
+    <span class="brandlogo"><span class="mark mark-sm"></span><span class="typed">Maju Terus Maju</span></span>
     <span class="sp"></span>
     <span id="tgl-dashboard"></span>
     <span class="chip" id="chip-dashboard"></span>
   </div>
   <div class="wrap">
-    <div class="pagehead"><h2>Dashboard</h2><p>Ringkasan performa toko. Pilih periode untuk lihat data harian, mingguan, bulanan, atau tahunan.</p></div>
+    <div class="pagehead"><h2>Dashboard <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Ringkasan performa toko secara <b>live</b>: omzet, laba kotor, biaya, & laba bersih. Pilih periode (hari/minggu/bulan/tahun) untuk lihat trennya.</span></button></h2></div>
     <div class="card">
       <div class="dash-presets" id="dash-presets">
         <button data-p="today">Hari Ini</button>
@@ -646,13 +678,13 @@ body.noshell{padding-bottom:0}
 <section id="view-stok" class="view">
   <div class="topbar">
     <button class="back" onclick="go('home')">← Kembali</button>
-    <span class="brand">Stok Barang</span>
+    <span class="brandlogo"><span class="mark mark-sm"></span><span class="typed">Maju Terus Maju</span></span>
     <span class="sp"></span>
     <span id="tgl-stok"></span>
     <span class="chip" id="chip-stok"></span>
   </div>
   <div class="wrap">
-    <div class="pagehead"><h2>Stok Barang</h2><p>Stok otomatis berkurang saat ada orderan. Tambah stok saat barang datang, atau koreksi manual.</p></div>
+    <div class="pagehead"><h2>Stok Barang <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Stok <b>otomatis berkurang</b> saat ada orderan. Tambah "Barang Masuk" saat barang datang, atau "Koreksi" untuk kurangi manual. Satuan Roll.</span></button></h2></div>
     <div class="card">
       <div class="field">
         <label>Produk</label>
@@ -681,13 +713,13 @@ body.noshell{padding-bottom:0}
 <section id="view-delete" class="view">
   <div class="topbar">
     <button class="back" onclick="go('home')">← Kembali</button>
-    <span class="brand">Hapus Data</span>
+    <span class="brandlogo"><span class="mark mark-sm"></span><span class="typed">Maju Terus Maju</span></span>
     <span class="sp"></span>
     <span id="tgl-delete"></span>
     <span class="chip" id="chip-delete"></span>
   </div>
   <div class="wrap">
-    <div class="pagehead"><h2 style="color:var(--danger)">Hapus Data</h2><p>Pilih tanggal, lalu hapus data yang salah. Aksi ini permanen &amp; tidak bisa dibatalkan.</p></div>
+    <div class="pagehead"><h2 style="color:var(--danger)">Hapus Data <button class="info" onclick="tipToggle(this,event)">?<span class="tip">Pilih tanggal, lalu hapus penjualan yang salah, atau reset biaya yang terkunci. <b>Aksi ini permanen & tidak bisa dibatalkan.</b></span></button></h2></div>
     <div class="card">
       <div class="field" style="margin-bottom:12px">
         <label>Pilih Tanggal</label>
@@ -743,7 +775,7 @@ body.noshell{padding-bottom:0}
 
 <!-- app navigation -->
 <nav id="nav">
-  <div class="navbrand"><span class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 15L12 8l3 3 4-6" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M15 5h4v4" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>Maju Terus Maju</span></div>
+  <div class="navbrand"><span class="mark mark-sm"></span><span class="typed">Maju Terus Maju</span></div>
   <a data-v="home" onclick="go('home')"><span class="ni">🏠</span>Home</a>
   <a data-v="dashboard" onclick="go('dashboard')"><span class="ni">📊</span>Dashboard</a>
   <a data-v="input" onclick="go('input')"><span class="ni">➕</span>Input</a>
@@ -795,6 +827,19 @@ function toast(msg,type){const t=$("#toast");t.className="";t.innerHTML=msg;void
 
 /* ============ theme ============ */
 function mountToggles(){["#tgl-home","#tgl-input","#tgl-export","#tgl-delete","#tgl-stok","#tgl-dashboard","#nav-toggle"].forEach(id=>{const h=$(id);if(h&&!h.children.length)h.appendChild($("#tpl-toggle").content.cloneNode(true));});}
+function startTypeBrand(){
+  const build=()=>{const n=getInputter();return n?["Maju Terus Maju","Hai "+n+" 👋"]:["Maju Terus Maju"];};
+  let list=build(),pi=0,i=0,dir=1;
+  const chars=()=>[...list[pi]];
+  const paint=()=>{const c=chars().slice(0,i).join("");document.querySelectorAll(".typed").forEach(e=>{e.textContent=c;});};
+  function step(){
+    const len=chars().length;i+=dir;
+    if(i>=len){i=len;dir=-1;paint();setTimeout(step,list.length>1?6500:40000);return;}
+    if(i<=0){i=0;dir=1;pi=(pi+1)%list.length;list=build();if(pi>=list.length)pi=0;paint();setTimeout(step,650);return;}
+    paint();setTimeout(step,dir>0?125:60);
+  }
+  paint();setTimeout(step,700);
+}
 /* tooltip ? */
 function tipToggle(el,ev){ev.stopPropagation();const open=el.classList.contains("show");document.querySelectorAll(".info.show").forEach(x=>x.classList.remove("show"));if(!open)el.classList.add("show");}
 document.addEventListener("click",()=>document.querySelectorAll(".info.show").forEach(x=>x.classList.remove("show")));
@@ -805,7 +850,8 @@ const INPUTTERS=["Ailen","Gunawan","Ahwang"];
 function getInputter(){try{return localStorage.getItem("mtm_inputter")||"";}catch(e){return"";}}
 function setInputter(n){try{localStorage.setItem("mtm_inputter",n);}catch(e){}renderGreet();const s=$("#f-inputter");if(s)s.value=n;}
 function changeInputter(){try{localStorage.removeItem("mtm_inputter");}catch(e){}renderGreet();$("#namemodal").hidden=false;}
-function maybeAskName(){if(!getInputter())$("#namemodal").hidden=false;}
+let _askedThisLoad=false;
+function maybeAskName(){if(_askedThisLoad)return;_askedThisLoad=true;$("#namemodal").hidden=false;}
 function pickName(n){setInputter(n);$("#namemodal").hidden=true;toast("Halo "+n+"! 👋","ok");}
 function renderGreet(){
   const g=$("#greet");if(!g)return;const n=getInputter();
@@ -855,7 +901,7 @@ function go(name){
   document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
   const v=$("#view-"+name);v.classList.add("active");
   v.style.animation="none";void v.offsetWidth;v.style.animation="";
-  window.scrollTo(0,0);history.replaceState(null,"","#"+name);
+  window.scrollTo(0,0);try{history.replaceState(null,"","#"+name);}catch(e){}
   document.querySelectorAll("#nav a").forEach(a=>a.classList.toggle("on",a.dataset.v===name));
   if(name==="export")initExport();
   if(name==="delete")initDelete();
@@ -871,7 +917,7 @@ function askDelete(){
   else toast("⚠️ Password salah","bad");
 }
 window.addEventListener("load",()=>{
-  mountToggles();
+  mountToggles();startTypeBrand();
   const modeTxt=DB.mode==="cloud"?"☁️ Tersinkron ke cloud — data dibagikan antar perangkat.":"📴 Mode offline (localStorage) — isi firebase-config.js agar tersinkron antar HP.";
   $("#home-mode").textContent=modeTxt;
   const chip=(id)=>{const c=$(id);c.className="chip "+DB.mode;c.textContent=DB.mode==="cloud"?"☁️ Cloud":"📴 Offline";};

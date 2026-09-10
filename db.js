@@ -44,12 +44,25 @@
     DB.deleteIklan = (date) => fs.collection("iklan").doc(date).delete();
     DB.deleteBulanan = (month) => fs.collection("bulanan").doc(month).delete();
 
-    DB.getStok = async (date) => {
-      const d = await fs.collection("stok").doc(date).get();
-      return d.exists ? (d.data().items || {}) : null;
+    DB.addStokMasuk = (e) => fs.collection("stokmasuk").add({ ...e, createdAt: Date.now() });
+    DB.getStokMasuk = async () => {
+      const snap = await fs.collection("stokmasuk").get();
+      const rows = []; snap.forEach((d) => rows.push({ id: d.id, ...d.data() }));
+      rows.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      return rows;
     };
-    DB.setStok = (date, items) => fs.collection("stok").doc(date).set({ items, updatedAt: Date.now() });
+    DB.deleteStokMasuk = (id) => fs.collection("stokmasuk").doc(id).delete();
 
+    DB.getAllIklan = async () => {
+      const snap = await fs.collection("iklan").get();
+      const m = {}; snap.forEach((d) => { m[d.id] = d.data().nilai; });
+      return m;
+    };
+    DB.getAllBulanan = async () => {
+      const snap = await fs.collection("bulanan").get();
+      const m = {}; snap.forEach((d) => { m[d.id] = d.data(); });
+      return m;
+    };
     DB.getIklan = async (date) => {
       const d = await fs.collection("iklan").doc(date).get();
       return d.exists ? d.data().nilai : null;
@@ -104,9 +117,12 @@
     DB.deleteIklan = async (date) => { const d = load(); delete d.iklan[date]; save(d); };
     DB.deleteBulanan = async (month) => { const d = load(); delete d.bulanan[month]; save(d); };
 
-    DB.getStok = async (date) => { const d = load(); return d.stok && d.stok[date] ? d.stok[date] : null; };
-    DB.setStok = async (date, items) => { const d = load(); d.stok = d.stok || {}; d.stok[date] = items; save(d); };
+    DB.addStokMasuk = async (e) => { const d = load(); d.stokmasuk = d.stokmasuk || []; d.stokmasuk.push({ id: "l" + Date.now() + Math.random().toString(36).slice(2, 6), ...e, createdAt: Date.now() }); save(d); };
+    DB.getStokMasuk = async () => { const d = load(); return (d.stokmasuk || []).slice().sort((a, b) => b.createdAt - a.createdAt); };
+    DB.deleteStokMasuk = async (id) => { const d = load(); d.stokmasuk = (d.stokmasuk || []).filter((x) => x.id !== id); save(d); };
 
+    DB.getAllIklan = async () => { const d = load(); return d.iklan || {}; };
+    DB.getAllBulanan = async () => { const d = load(); return d.bulanan || {}; };
     DB.getIklan = async (date) => {
       const d = load();
       return date in d.iklan ? d.iklan[date] : null;

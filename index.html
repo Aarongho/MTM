@@ -16,19 +16,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
 :root{
-  --bg:#eceef6; --surface:#ffffff; --surface-2:#f4f5fb; --inset:#f1f2f9;
-  --ink:#1a1d2e; --muted:#767c96; --faint:#a6abc2; --line:#e6e8f2;
-  --brand:#6d5efc; --brand-2:#8b7bff; --brand-ink:#ffffff; --brand-soft:#efecff; --brand-soft-2:#e7e3ff;
-  --ok:#12a150; --ok-soft:#e7f6ec; --danger:#e5484d; --danger-soft:#fdecec;
-  --shadow:0 18px 40px -22px rgba(30,32,70,.30); --shadow-sm:0 6px 18px -12px rgba(30,32,70,.28);
+  --bg:#f3f5f6; --surface:#ffffff; --surface-2:#f0f3f3; --inset:#eef1f1;
+  --ink:#002f34; --muted:rgba(0,47,52,.64); --faint:rgba(0,47,52,.36); --line:#dbe3e3;
+  --brand:#2a65ea; --brand-2:#5085f0; --brand-ink:#ffffff; --brand-soft:#edf1fe; --brand-soft-2:#d0dcfc;
+  --ok:#12a150; --ok-soft:#e7f6ec; --danger:#ed5039; --danger-soft:#fde8e4;
+  --shadow:0 18px 40px -22px rgba(0,47,52,.26); --shadow-sm:0 6px 18px -12px rgba(0,47,52,.22);
   --radius:20px;
 }
 [data-theme="dark"]{
-  --bg:#0f1320; --surface:#191e30; --surface-2:#212840; --inset:#232a44;
-  --ink:#eef0fa; --muted:#9298b6; --faint:#6b7297; --line:#2b3350;
-  --brand:#8b7bff; --brand-2:#a89bff; --brand-ink:#ffffff; --brand-soft:#282a56; --brand-soft-2:#2f3168;
-  --ok:#3ecb74; --ok-soft:#16351f; --danger:#ff6b6f; --danger-soft:#3a2130;
-  --shadow:0 20px 46px -22px rgba(0,0,0,.7); --shadow-sm:0 8px 22px -14px rgba(0,0,0,.6);
+  --bg:#15171c; --surface:#202227; --surface-2:#25272c; --inset:#27292d;
+  --ink:rgba(255,255,255,.87); --muted:rgba(255,255,255,.64); --faint:rgba(255,255,255,.38); --line:#33353b;
+  --brand:#4888ff; --brand-2:#6ba0ff; --brand-ink:#ffffff; --brand-soft:#1b2e59; --brand-soft-2:#1e387e;
+  --ok:#3ecb74; --ok-soft:#123a2b; --danger:#ff5b52; --danger-soft:#3a2321;
+  --shadow:0 20px 46px -22px rgba(0,0,0,.72); --shadow-sm:0 8px 22px -14px rgba(0,0,0,.62);
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -237,6 +237,22 @@ td.r,th.r{text-align:right}
 .export-actions{display:flex;gap:10px;margin-top:15px}
 .export-actions button{flex:1;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:13px;padding:13px;font-weight:700;font-size:13px;cursor:pointer}
 .export-actions button:hover{border-color:var(--brand);color:var(--brand)}
+/* tombol unduh beranimasi (panah → progress → centang) */
+.dlbtn{position:relative;overflow:hidden;display:flex!important;align-items:center;justify-content:center;gap:9px;transition:border-color .2s,color .2s,background-color .2s}
+.dlbtn .dl-ic{width:20px;height:20px;position:relative;flex:0 0 auto}
+.dlbtn .dl-ic svg{position:absolute;inset:0;width:20px;height:20px;display:block;stroke:currentColor}
+.dlbtn .dl-check{opacity:0;color:var(--brand)}
+.dlbtn .dl-mov{transform-box:fill-box;transform-origin:center}
+.dlbtn::after{content:"";position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--brand);transform:scaleX(0);transform-origin:left;opacity:0}
+.dlbtn.dl-load{border-color:var(--brand)!important;color:var(--brand)!important}
+.dlbtn.dl-load::after{opacity:1;animation:dlprog .95s cubic-bezier(.4,0,.2,1) forwards}
+.dlbtn.dl-load .dl-mov{animation:dlmov .95s ease}
+.dlbtn.dl-done{border-color:var(--brand)!important;color:var(--brand)!important;background:var(--brand-soft)!important}
+.dlbtn.dl-done .dl-arrow{opacity:0}
+.dlbtn.dl-done .dl-check{opacity:1;animation:dlpop .34s cubic-bezier(.4,1.5,.4,1)}
+@keyframes dlprog{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes dlmov{0%{transform:translateY(0)}32%{transform:translateY(4px)}50%{transform:translateY(-15px);opacity:0}51%{transform:translateY(-15px);opacity:0}72%{opacity:1}100%{transform:translateY(0)}}
+@keyframes dlpop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
 .empty{text-align:center;color:var(--muted);padding:38px 10px;font-size:14px}
 .empty .ic{font-size:34px;display:block;margin-bottom:10px}
 .loading{text-align:center;color:var(--muted);padding:28px}
@@ -344,10 +360,19 @@ td.r,th.r{text-align:right}
 #nav{position:fixed;z-index:90;background:var(--surface);bottom:0;left:0;right:0;display:none;justify-content:space-around;
   padding:6px 4px calc(6px + env(safe-area-inset-bottom));border-top:1px solid var(--line);box-shadow:0 -8px 24px -14px rgba(0,0,0,.28)}
 #nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:7px 2px;color:var(--muted);font-size:10.5px;font-weight:700;cursor:pointer;border-radius:13px;transition:.15s;user-select:none}
-#nav a .ni{display:grid;place-items:center;line-height:1;transition:.15s}
+#nav a .ni{display:grid;place-items:center;line-height:1;transition:transform .25s cubic-bezier(.4,1.4,.4,1)}
 #nav a .ni svg{width:22px;height:22px;display:block}
 #nav a.on{color:var(--brand)}
 #nav a.on .ni{transform:translateY(-2px) scale(1.06)}
+/* hover nav (desktop) — elegan & minimalis */
+#nav a{position:relative;transition:background-color .2s ease,color .2s ease}
+#nav a:hover{color:var(--brand)}
+#nav a:hover .ni{transform:translateX(3px)}
+@media(min-width:900px){
+  #nav a:hover{background:color-mix(in srgb,var(--brand-soft) 70%,transparent)}
+  #nav a:hover .ni{transform:translateX(2px) scale(1.05)}
+  #nav a.on:hover{background:var(--brand-soft)}
+}
 #nav .navbrand,#nav .navspacer,#nav .navdesk{display:none}
 body{padding-bottom:92px}
 body.noshell #nav{display:none}
@@ -371,33 +396,34 @@ body.noshell{padding-bottom:0}
 @media(min-width:760px){
   .kpis{grid-template-columns:repeat(4,1fr)}
 }
-/* ---------- docked mobile bottom nav + FAB ---------- */
-#mnav{position:fixed;left:0;right:0;bottom:0;z-index:90;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:64px;padding-bottom:env(safe-area-inset-bottom);
-  background:var(--surface);border-top:1px solid var(--line);border-radius:24px 24px 0 0;box-shadow:0 -12px 34px -14px rgba(20,40,90,.30);overflow:visible}
-[data-theme="dark"] #mnav{box-shadow:0 -12px 34px -14px rgba(0,0,0,.7)}
+/* ---------- docked mobile bottom nav (curved-notch) ---------- */
+#mnav{position:fixed;left:0;right:0;bottom:0;z-index:90;display:grid;grid-template-columns:repeat(5,1fr);align-items:center;height:66px;padding-bottom:env(safe-area-inset-bottom);
+  background:var(--surface);border-top:1px solid var(--line);border-radius:22px 22px 0 0;box-shadow:0 -12px 34px -16px rgba(20,40,90,.26);overflow:visible}
+[data-theme="dark"] #mnav{box-shadow:0 -12px 34px -16px rgba(0,0,0,.7)}
 body.noshell #mnav{display:none}
 @media(min-width:900px){#mnav{display:none}}
-/* indikator: gumpalan yang nonjol ke atas + morph blur saat berpindah */
-.mnav-ind{position:absolute;top:-10px;width:44px;height:44px;border-radius:50%;
-  background:linear-gradient(140deg,var(--brand),var(--brand-2));
-  box-shadow:0 10px 20px -6px var(--brand);
-  border:5px solid var(--bg);
-  transform:translateX(-50%);
-  transition:left .52s cubic-bezier(.5,1.15,.3,1),width .42s cubic-bezier(.5,1.15,.3,1),filter .34s ease,opacity .25s;
-  z-index:2;pointer-events:none;opacity:0}
-.mnav-ind.moving{filter:blur(6px);width:66px}
-.mitem{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;user-select:none;transition:color .25s;text-decoration:none}
-.mitem .mi{display:grid;place-items:center;line-height:1;transition:transform .5s cubic-bezier(.5,1.5,.35,1),color .25s}
+/* penanda: HANYA tonjolan putih yang naik menandai tab aktif (tanpa blur, tanpa chip) */
+.mnav-bump{position:absolute;top:0;left:0;width:74px;height:26px;transform:translate(-50%,-16px);pointer-events:none;z-index:2;opacity:0;
+  transition:left .5s cubic-bezier(.45,1.05,.35,1),opacity .28s}
+.mnav-bump .bshape{position:absolute;inset:0}
+.mnav-bump .bshape svg{width:100%;height:100%;display:block;filter:drop-shadow(0 -3px 4px rgba(0,47,52,.08))}
+.mnav-bump .bshape path{fill:var(--surface)}
+.mnav-bump .bic{position:absolute;left:50%;top:1px;transform:translateX(-50%);color:var(--brand);display:grid;place-items:center}
+.mnav-bump .bic svg{width:23px;height:23px;display:block}
+.mitem{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:10px;font-weight:700;cursor:pointer;user-select:none;text-decoration:none;opacity:.5;transition:opacity .3s,color .3s}
+.mitem .mi{display:grid;place-items:center;line-height:1;transition:opacity .25s}
 .mitem .mi svg{width:23px;height:23px;display:block}
-.mitem .ml{transition:opacity .25s,transform .3s}
-.mitem.on{color:var(--brand)}
-.mitem.on .mi{transform:translateY(-19px) scale(1.05);color:#fff}
-.mitem.on .ml{opacity:0;transform:translateY(4px)}
-/* FAB "+" — animasi terpisah, menyatu dgn bar */
-.mfab{position:absolute;left:50%;top:-20px;transform:translateX(-50%);width:56px;height:56px;border-radius:50%;border:5px solid var(--bg);background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 12px 26px -6px var(--brand);cursor:pointer;display:grid;place-items:center;z-index:5;transition:transform .4s cubic-bezier(.5,1.6,.4,1),box-shadow .3s}
-.mfab svg{width:26px;height:26px;transition:transform .4s cubic-bezier(.5,1.6,.4,1)}
-.mfab:active{transform:translateX(-50%) scale(.9)}
-#mnav.fabopen .mfab{box-shadow:0 8px 30px -4px var(--brand)}
+.mitem .ml{transition:opacity .25s}
+.mitem:hover{opacity:.85}
+.mitem.on{opacity:1;color:var(--brand)}
+.mitem.on:hover{opacity:1}
+.mitem.on .mi{opacity:0}
+.mitem.on .ml{opacity:0}
+/* tombol + rata (flat) di tengah — tidak menonjol, selalu penuh */
+.mfab{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:47px;height:47px;border-radius:50%;border:none;background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 6px 16px -6px var(--brand);cursor:pointer;display:grid;place-items:center;z-index:4;transition:transform .38s cubic-bezier(.5,1.5,.4,1),box-shadow .3s}
+.mfab svg{width:25px;height:25px;transition:transform .42s cubic-bezier(.5,1.6,.4,1)}
+.mfab:active{transform:translate(-50%,-50%) scale(.9)}
+#mnav.fabopen .mfab{box-shadow:0 8px 26px -4px var(--brand)}
 #mnav.fabopen .mfab svg{transform:rotate(135deg)}
 .fabmenu{position:absolute;left:50%;bottom:78px;transform:translateX(-50%);display:flex;flex-direction:column;gap:12px;z-index:5;pointer-events:none}
 .fabopt{display:flex;align-items:center;gap:11px;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:var(--shadow);border-radius:999px;padding:11px 20px 11px 11px;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;opacity:0;transform:translateY(22px) scale(.8);transition:opacity .28s ease,transform .36s cubic-bezier(.4,1.5,.4,1)}
@@ -423,11 +449,6 @@ body.noshell #mnav{display:none}
 /* menuju TERANG: halaman TERANG = NEW, ada di atas & tumbuh dari tombol */
 :root.vt-toLight::view-transition-new(root){z-index:2}
 :root.vt-toLight::view-transition-old(root){z-index:1}
-/* tombol tema tetap tampil hidup di atas overlay transisi supaya knob-nya kelihatan bergerak */
-.tglt.vt-live{view-transition-name:themebtn}
-::view-transition-group(themebtn){z-index:2147483647}
-::view-transition-image-pair(themebtn){isolation:auto}
-::view-transition-old(themebtn),::view-transition-new(themebtn){animation-duration:.62s;mix-blend-mode:normal;height:100%}
 
 /* toast */
 #toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(30px);background:#111827;color:#fff;padding:14px 22px;border-radius:14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.3s;z-index:200;max-width:90vw}
@@ -437,10 +458,10 @@ body.noshell #mnav{display:none}
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ===== brand refresh: logo, palet biru, tombol elegan, brand ketik ===== */
-:root{--brand:#2f6fed;--brand-2:#5b90f5;--brand-soft:#e9f1ff;--brand-soft-2:#dbe8ff}
+:root{--brand:#2a65ea;--brand-2:#5085f0;--brand-soft:#edf1fe;--brand-soft-2:#d0dcfc}
 :root:not([data-theme="light"]){}
-[data-theme="dark"]{--brand:#5b93f7;--brand-2:#86b0fb;--brand-soft:#17274d;--brand-soft-2:#1e3a6e}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#5b93f7;--brand-2:#86b0fb;--brand-soft:#17274d;--brand-soft-2:#1e3a6e}}
+[data-theme="dark"]{--brand:#4888ff;--brand-2:#6ba0ff;--brand-soft:#1b2e59;--brand-soft-2:#1e387e}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#4888ff;--brand-2:#6ba0ff;--brand-soft:#1b2e59;--brand-soft-2:#1e387e}}
 .hero-title .g,.greet-hi b{background:linear-gradient(100deg,var(--brand),var(--brand-2) 60%,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
 /* logo tile (menggantikan mark bawaan) */
 .mark{background:#ffffff !important;box-shadow:0 7px 18px -9px rgba(20,50,110,.4) !important;position:relative;overflow:hidden;border:1px solid rgba(20,50,110,.08)}
@@ -819,7 +840,7 @@ body.noshell #mnav{display:none}
     <div class="card">
       <div class="field" style="margin-bottom:0">
         <label>Tampilan (Terang / Gelap)</label>
-        <div class="set-row"><div class="set-name" id="set-theme-lbl" style="font-weight:600;color:var(--muted)">Ketuk untuk ganti tema</div><span id="tgl-settings2"></span></div>
+        <div class="set-row"><div class="set-name" id="set-theme-lbl" style="font-weight:600;color:var(--muted)">Terang / Gelap</div><button class="set-btn" onclick="toggleTheme(event)">Ganti Tema</button></div>
       </div>
     </div>
     <div class="card" id="set-account-card">
@@ -888,7 +909,7 @@ body.noshell #mnav{display:none}
 <!-- docked mobile bottom nav -->
 <nav id="mnav">
   <div class="fabwave"></div>
-  <span class="mnav-ind" id="mnavInd"></span>
+  <div class="mnav-bump" id="mnavBump"><span class="bshape"><svg viewBox="0 0 74 26" preserveAspectRatio="none"><path d="M0,26 L0,20 C14,20 18,2 37,2 C56,2 60,20 74,20 L74,26 Z"/></svg></span><span class="bic" id="mnavBic"></span></div>
   <a class="mitem" data-v="home" onclick="go('home')"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.6 12 3l9 7.6"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1H17.5a1 1 0 0 0 1-1V9.5"/><path d="M9.5 21v-6h5v6"/></svg></span><span class="ml">Home</span></a>
   <a class="mitem" data-v="dashboard" onclick="go('dashboard')"><span class="mi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/></svg></span><span class="ml">Dashboard</span></a>
   <span></span>
@@ -944,7 +965,7 @@ function range(a,b){const r=[];for(let i=a;i<=b;i++)r.push(i);return r;}
 function toast(msg,type){const t=$("#toast");t.className="";t.innerHTML=msg;void t.offsetWidth;t.classList.add("show");if(type)t.classList.add(type);clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove("show"),2600);}
 
 /* ============ theme ============ */
-function mountToggles(){["#tgl-home","#tgl-input","#tgl-export","#tgl-delete","#tgl-stok","#tgl-dashboard","#tgl-settings","#tgl-settings2","#nav-toggle"].forEach(id=>{const h=$(id);if(h&&!h.children.length)h.appendChild($("#tpl-toggle").content.cloneNode(true));});}
+function mountToggles(){["#tgl-home","#tgl-input","#tgl-export","#tgl-delete","#tgl-stok","#tgl-dashboard","#tgl-settings","#nav-toggle"].forEach(id=>{const h=$(id);if(h&&!h.children.length)h.appendChild($("#tpl-toggle").content.cloneNode(true));});}
 function startTypeBrand(){
   const build=()=>{const n=getInputter();return n?["Maju Terus Maju","Hai "+n+" 👋"]:["Maju Terus Maju"];};
   let list=build(),pi=0,i=0,dir=1;
@@ -959,18 +980,40 @@ function startTypeBrand(){
   paint();setTimeout(step,700);
 }
 let _view="home";
+let _indName=null;
 function moveInd(name){
+  const bump=document.getElementById('mnavBump'),bic=document.getElementById('mnavBic'),nav=document.getElementById('mnav');
+  if(!bump||!nav)return;
   const it=document.querySelector('#mnav .mitem[data-v="'+name+'"]');
-  const ind=document.getElementById('mnavInd');if(!ind)return;
-  if(!it){ind.style.opacity=0;ind.classList.remove('moving');return;}
-  const target=(it.offsetLeft+it.offsetWidth/2)+'px';
-  const first=!ind.style.left||ind.style.opacity==='0'||ind.style.opacity==='';
-  ind.style.opacity=1;
-  if(first){ind.classList.remove('moving');ind.style.left=target;return;}
-  // morph: melar + blur saat berpindah antar tab, lalu mengumpul lagi
-  ind.classList.add('moving');
-  ind.style.left=target;
-  clearTimeout(ind._t);ind._t=setTimeout(()=>ind.classList.remove('moving'),440);
+  const isInput=(name==='input');
+  let x;
+  if(it)x=it.offsetLeft+it.offsetWidth/2;
+  else if(isInput)x=nav.clientWidth/2;          // Input(+) : penanda ke tengah tapi disembunyikan (+ rata)
+  else{bump.style.opacity=0;_indName=name;return;} // stok/delete: tanpa penanda
+  const show=!isInput;
+  if(it&&bic)bic.innerHTML=it.querySelector('.mi').innerHTML;
+  const prev=_indName;_indName=name;
+  const norm='left .5s cubic-bezier(.45,1.05,.35,1)';
+  const first=!bump.style.left;
+  if(first){bump.style.transition=norm;bump.style.left=x+'px';bump.style.opacity=show?1:0;return;}
+  // "lewat tembok": hanya utk perpindahan antar tab UJUNG (home <-> settings)
+  const edges=['home','settings'];
+  const wrap=prev&&edges.includes(prev)&&edges.includes(name)&&prev!==name;
+  if(wrap){
+    const goingRight=(name==='settings');       // kiri->kanan: keluar tembok KIRI, masuk tembok KANAN
+    const off=goingRight?-90:nav.clientWidth+90;
+    const enter=goingRight?nav.clientWidth+90:-90;
+    bump.style.opacity=show?1:0;
+    bump.style.transition='left .26s cubic-bezier(.5,0,.9,.35)';
+    bump.style.left=off+'px';
+    clearTimeout(bump._t);
+    bump._t=setTimeout(()=>{
+      bump.style.transition='none';bump.style.left=enter+'px';bump.getBoundingClientRect();
+      bump.style.transition='left .42s cubic-bezier(.3,1.1,.35,1)';bump.style.left=x+'px';
+    },250);
+    return;
+  }
+  bump.style.transition=norm;bump.style.opacity=show?1:0;bump.style.left=x+'px';
 }
 function toggleFab(e){if(e)e.stopPropagation();const m=document.getElementById('mnav');if(m)m.classList.toggle('fabopen');}
 function closeFab(){const m=document.getElementById('mnav');if(m)m.classList.remove('fabopen');}
@@ -980,38 +1023,49 @@ window.addEventListener('resize',()=>moveInd(_view));
 function tipToggle(el,ev){ev.stopPropagation();const open=el.classList.contains("show");document.querySelectorAll(".info.show").forEach(x=>x.classList.remove("show"));if(!open)el.classList.add("show");}
 document.addEventListener("click",()=>document.querySelectorAll(".info.show").forEach(x=>x.classList.remove("show")));
 let _themeAnim=false;
+function isVisible(el){if(!el)return false;const r=el.getBoundingClientRect();return r.width>0&&r.height>0;}
+function themeOriginBtn(ev){
+  // 1) tombol tema pojok kanan-atas di halaman aktif (posisi konsisten)
+  const active=document.querySelector('.view.active');
+  let b=active&&active.querySelector('.topbar .tglt,.lp-top .tglt');
+  if(isVisible(b))return b;
+  // 2) tombol yang diklik
+  if(ev&&ev.currentTarget&&isVisible(ev.currentTarget))return ev.currentTarget;
+  // 3) tombol tema apa saja yang kelihatan
+  return [...document.querySelectorAll('.tglt')].find(isVisible)||null;
+}
 function toggleTheme(ev){
   const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
   const next=cur==='dark'?'light':'dark';
   const apply=()=>{document.documentElement.setAttribute('data-theme',next);try{localStorage.setItem('mtm_theme',next);}catch(e){}};
   const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
-  const btn=(ev&&ev.currentTarget)||document.querySelector('.tglt');
-  if(reduce||!btn){apply();return;}
-  const r=btn.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  // Titik asal SELALU sama di setiap halaman: tombol tema di pojok kanan atas (topbar/landing).
+  // Kalau tak ada (mis. desktop pakai sidebar), pakai tombol yang diklik.
+  const origin=themeOriginBtn(ev);
+  if(reduce||!origin){apply();return;}
+  const r=origin.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
   const R=Math.hypot(Math.max(cx,innerWidth-cx),Math.max(cy,innerHeight-cy))+8;
   const toLight=next==='light';
-  // Cara terbaik: View Transitions — halaman TERANG selalu jadi "gumpalan" yang berpusat di tombol.
+  // View Transitions — halaman TERANG selalu jadi "gumpalan" yang berpusat di tombol.
   //  • ke TERANG : terang = halaman BARU  → tumbuh dari tombol (0 → penuh)
   //  • ke GELAP  : terang = halaman LAMA → mengecil balik ke tombol (penuh → 0)
-  // Tombol yang diklik dibiarkan hidup di atas overlay supaya knob-nya kelihatan berpindah.
   if(document.startViewTransition){
     document.documentElement.classList.toggle('vt-toLight',toLight);
-    btn.classList.add('vt-live');
     const t=document.startViewTransition(()=>apply());
     t.ready.then(()=>{
       const el=toLight?'::view-transition-new(root)':'::view-transition-old(root)';
       const big=`circle(${R}px at ${cx}px ${cy}px)`,small=`circle(0px at ${cx}px ${cy}px)`;
       document.documentElement.animate(
         {clipPath:toLight?[small,big]:[big,small]},
-        {duration:620,easing:'cubic-bezier(.4,0,.2,1)',pseudoElement:el});
+        {duration:640,easing:'cubic-bezier(.45,0,.15,1)',pseudoElement:el});
     }).catch(()=>{});
-    t.finished.finally(()=>{document.documentElement.classList.remove('vt-toLight');btn.classList.remove('vt-live');});
+    t.finished.finally(()=>document.documentElement.classList.remove('vt-toLight'));
     return;
   }
   // Fallback tanpa View Transitions: overlay warna TERANG selalu berpusat di tombol.
   if(_themeAnim){apply();return;}
   _themeAnim=true;
-  const lightBg='#eceef6';
+  const lightBg='#f3f5f6';
   const ov=document.createElement('div');ov.className='theme-reveal';ov.style.background=lightBg;
   if(toLight){
     // dark → light: gumpalan terang TUMBUH dari tombol menutup layar, lalu tema di-apply
@@ -1204,6 +1258,18 @@ function refreshPrices(){
   refreshPotongan();
 }
 function refreshPotongan(){const toko=$("#f-toko").value,v=currentVariant();const jumlah=digits($("#f-jumlah").value);if(!v)return;let jual=toko==="Tokopedia"?v.jualTokopedia:toko==="Shopee"?v.jualShopee:digits($("#f-jual-manual").value);$("#out-jual").textContent=jual?rp(jual):(toko==="Offline"?"isi manual →":"—");if(toko==="Shopee"||toko==="Offline"){const total=(jual||0)*(jumlah||0);$("#f-potongan").value=total?total.toLocaleString("id-ID"):"";}}
+function resetSaleForm(){
+  setDateField("#f-date-val","#f-date",todayWIB());
+  $("#f-produk").value="";$("#f-toko").value="";
+  document.querySelectorAll('input[name="jenis"]').forEach(r=>r.checked=false);
+  $("#f-jumlah").value="";$("#f-potongan").value="";$("#f-jual-manual").value="";$("#f-pengambil").value="";
+  $("#out-jual").textContent="—";$("#out-beli").textContent="—";
+  $("#wrap-jual-offline").style.display="none";
+  const note=$("#potongan-note");if(note)note.className="locked-note";
+  const jh=$("#jml-hint");if(jh)jh.textContent="";
+  refreshPrices();
+  try{window.scrollTo({top:0,behavior:'smooth'});}catch(e){window.scrollTo(0,0);}
+}
 async function submitSale(e){
   e.preventDefault();const err=$("#form-err");err.className="err";const btn=$("#btn-submit");
   const tanggal=$("#f-date").value,nama=$("#f-produk").value,toko=$("#f-toko").value;
@@ -1226,7 +1292,7 @@ async function submitSale(e){
   else{hargaSetelahPotongan=hargaJual*jumlah;labaKotor=hargaJual*jumlah-modal;}
   const row={tanggal,namaProduk:nama,toko,jenisProduk:jenis,jumlah,hargaJual,hargaBeli,hargaSetelahPotongan,pengambil,inputter,labaKotor};
   btn.disabled=true;const old=btn.textContent;btn.innerHTML='<span class="spin"></span> Menyimpan…';
-  try{await DB.addSale(row);toast("✅ Penjualan tersimpan!","ok");$("#f-produk").value="";$("#f-jumlah").value="";$("#f-potongan").value="";$("#f-jual-manual").value="";document.querySelectorAll('input[name="jenis"]').forEach(r=>r.checked=false);$("#f-pengambil").value="";refreshPrices();}
+  try{await DB.addSale(row);toast("✅ Penjualan tersimpan! Form dikosongkan.","ok");resetSaleForm();}
   catch(ex){console.error(ex);fail("Gagal menyimpan. Cek koneksi / konfigurasi Firebase.");}
   finally{btn.disabled=false;btn.textContent=old;}
 }
@@ -1269,7 +1335,20 @@ async function loadReport(){
     <div class="srow minus"><span class="lbl">Lakban (${rp(bul.lakban||0)}/bln ÷ ${dim})</span><span class="amt">− ${rp(lakH)}</span></div>
     <div class="net"><div class="lbl">LABA BERSIH — ${tanggalIndo(date)}</div><div class="amt ${labaBersih<0?'neg':''}">${rp(labaBersih)}</div></div>
   </div>
-  <div class="export-actions"><button onclick="exportCSV('day')">⬇️ CSV (hari ini)</button><button onclick="exportCSV('all')">⬇️ CSV (semua data)</button></div>`;
+  <div class="export-actions">
+    <button class="dlbtn" onclick="doExport(this,'day')"><span class="dl-ic">${DL_ICON}</span><span class="dl-tx">CSV hari ini</span></button>
+    <button class="dlbtn" onclick="doExport(this,'all')"><span class="dl-ic">${DL_ICON}</span><span class="dl-tx">CSV semua data</span></button>
+  </div>`;
+}
+const DL_ICON='<svg class="dl-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="dl-tray" d="M4 20h16"/><g class="dl-mov"><path d="M12 3v11"/><path d="M7.5 10.5 12 15l4.5-4.5"/></g></svg><svg class="dl-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5 10 17.5 19.5 7"/></svg>';
+function doExport(btn,scope){
+  if(btn.classList.contains('dl-load'))return;
+  // kalau kosong, jangan mainkan animasi sukses — biarkan exportCSV kasih peringatan
+  if(scope==='day'&&(!_lastReport||!_lastReport.rows||!_lastReport.rows.length)){exportCSV('day');return;}
+  btn.classList.remove('dl-done');btn.classList.add('dl-load');
+  setTimeout(()=>exportCSV(scope),760);
+  setTimeout(()=>{btn.classList.remove('dl-load');btn.classList.add('dl-done');},980);
+  setTimeout(()=>btn.classList.remove('dl-done'),2500);
 }
 async function exportCSV(scope){
   const rows=scope==="all"?await DB.getAllSales():(_lastReport?_lastReport.rows:[]);

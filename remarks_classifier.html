@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Remarks Classifier</title>
+<meta name="description" content="Upload file Excel atau ZIP klaim, klasifikasi waterfall Remarks berjalan di browser, unduh hasilnya. 100% statis, tanpa server/backend.">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f6f7f4;
+    --surface: #ffffff;
+    --surface-2: #eef0ec;
+    --border: #dcdfd9;
+    --text: #1a201d;
+    --text-muted: #5c655f;
+    --accent: #1f6f5c;
+    --accent-strong: #123f34;
+    --accent-soft: #dcefe7;
+    --ok: #2f8f5b;
+    --ok-soft: #e2f4e9;
+    --warn: #b9791f;
+    --warn-soft: #faedd6;
+    --danger: #c1502e;
+    --danger-soft: #fae4dc;
+    --info: #4e6fa3;
+    --info-soft: #e4eaf3;
+    --shadow: 0 1px 2px rgba(20, 30, 25, 0.04), 0 4px 16px rgba(20, 30, 25, 0.05);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121512;
+      --surface: #181c19;
+      --surface-2: #1f2420;
+      --border: #2b322c;
+      --text: #eaeeec;
+      --text-muted: #9aa39c;
+      --accent: #3fa789;
+      --accent-strong: #7fd0b6;
+      --accent-soft: #1c332c;
+      --ok: #49b378;
+      --ok-soft: #1b3226;
+      --warn: #d99a3d;
+      --warn-soft: #3a2d16;
+      --danger: #e07253;
+      --danger-soft: #3a221b;
+      --info: #7f9dc9;
+      --info-soft: #212c3c;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121512;
+    --surface: #181c19;
+    --surface-2: #1f2420;
+    --border: #2b322c;
+    --text: #eaeeec;
+    --text-muted: #9aa39c;
+    --accent: #3fa789;
+    --accent-strong: #7fd0b6;
+    --accent-soft: #1c332c;
+    --ok: #49b378;
+    --ok-soft: #1b3226;
+    --warn: #d99a3d;
+    --warn-soft: #3a2d16;
+    --danger: #e07253;
+    --danger-soft: #3a221b;
+    --info: #7f9dc9;
+    --info-soft: #212c3c;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    padding-inline: 16px;
+    padding-block: 28px;
+    display: flex;
+    justify-content: center;
+  }
+  main { width: 100%; max-width: 720px; display: flex; flex-direction: column; gap: 18px; }
+
+  h1, h2, h3 { font-family: "Sora", "IBM Plex Sans", sans-serif; text-wrap: balance; margin: 0; }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+
+  header.page-head { display: flex; flex-direction: column; gap: 6px; padding-block: 4px 2px; }
+  header.page-head h1 { font-size: 1.5rem; font-weight: 700; color: var(--accent-strong); }
+  header.page-head p { margin: 0; color: var(--text-muted); font-size: 0.92rem; line-height: 1.5; max-width: 62ch; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+
+  details.settings { border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2); padding: 2px 14px; }
+  details.settings summary { cursor: pointer; padding-block: 10px; font-weight: 600; font-size: 0.88rem; color: var(--text); list-style: none; display: flex; align-items: center; gap: 8px; }
+  details.settings summary::-webkit-details-marker { display: none; }
+  details.settings summary::before { content: "▸"; color: var(--accent); transition: transform 0.15s ease; font-size: 0.75rem; }
+  details.settings[open] summary::before { transform: rotate(90deg); }
+  .settings-grid { display: flex; flex-direction: column; gap: 12px; padding-block: 4px 14px; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+  .field input[type="text"] {
+    font: inherit; font-size: 0.88rem; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  .field input[type="text"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .dropzone {
+    border: 2px dashed var(--border);
+    border-radius: 14px;
+    padding: 30px 18px;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    cursor: pointer;
+    background: var(--surface-2);
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: var(--accent-soft); }
+  .dropzone .big { font-weight: 600; font-size: 0.98rem; }
+  .dropzone .hint { color: var(--text-muted); font-size: 0.82rem; max-width: 42ch; }
+  .dropzone input[type="file"] { display: none; }
+
+  ul.filelist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  ul.filelist li {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px;
+    background: var(--surface); font-size: 0.84rem;
+  }
+  ul.filelist .fname { font-family: "IBM Plex Mono", monospace; font-size: 0.8rem; overflow-wrap: anywhere; flex: 1; }
+  ul.filelist .fsize { color: var(--text-muted); font-size: 0.76rem; white-space: nowrap; }
+  .badge {
+    font-size: 0.72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; white-space: nowrap;
+    font-family: "IBM Plex Sans", sans-serif;
+  }
+  .badge.queued { background: var(--surface-2); color: var(--text-muted); }
+  .badge.working { background: var(--info-soft); color: var(--info); }
+  .badge.done { background: var(--ok-soft); color: var(--ok); }
+  .badge.error { background: var(--danger-soft); color: var(--danger); }
+
+  button.primary {
+    font: inherit; font-weight: 600; font-size: 0.92rem; color: #fff;
+    background: var(--accent); border: none; border-radius: 10px; padding: 11px 18px;
+    cursor: pointer; transition: background 0.15s ease;
+  }
+  button.primary:hover:not(:disabled) { background: var(--accent-strong); }
+  button.primary:disabled { opacity: 0.45; cursor: not-allowed; }
+  button.ghost {
+    font: inherit; font-weight: 600; font-size: 0.84rem; color: var(--accent);
+    background: transparent; border: 1px solid var(--border); border-radius: 10px; padding: 8px 14px;
+    cursor: pointer;
+  }
+  button.ghost:hover { border-color: var(--accent); }
+
+  .progress-track { height: 8px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); width: 0%; transition: width 0.2s ease; }
+  .log {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--text-muted);
+    background: var(--surface-2); border-radius: 10px; padding: 10px 12px;
+    max-height: 140px; overflow-y: auto; white-space: pre-wrap; line-height: 1.5;
+  }
+
+  .chiprow { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    display: flex; align-items: baseline; gap: 6px; border-radius: 10px; padding: 8px 12px;
+    font-size: 0.8rem; font-weight: 500; flex: 1 1 130px;
+  }
+  .chip .n { font-family: "IBM Plex Mono", monospace; font-size: 1.05rem; font-weight: 600; }
+  .chip.aman { background: var(--ok-soft); color: var(--ok); }
+  .chip.others { background: var(--warn-soft); color: var(--warn); }
+  .chip.docnongl { background: var(--danger-soft); color: var(--danger); }
+  .chip.onlydocgl { background: var(--info-soft); color: var(--info); }
+
+  table.waterfall { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  table.waterfall th, table.waterfall td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  table.waterfall th { color: var(--text-muted); font-weight: 500; font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  table.waterfall td.num, table.waterfall th.num { text-align: right; font-family: "IBM Plex Mono", monospace; }
+  table.waterfall tr.indent td:first-child { padding-left: 20px; color: var(--text-muted); }
+  .overflow-x { overflow-x: auto; }
+
+  .result-card { display: flex; flex-direction: column; gap: 12px; }
+  .result-card .fname-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .result-card .fname-row .fname { font-family: "IBM Plex Mono", monospace; font-size: 0.82rem; }
+
+  .footer-note {
+    display: flex; flex-direction: column; gap: 10px; color: var(--text-muted); font-size: 0.82rem; line-height: 1.6;
+  }
+  .footer-note .privacy { display: flex; gap: 8px; align-items: flex-start; background: var(--accent-soft); color: var(--accent-strong); border-radius: 10px; padding: 10px 12px; font-size: 0.8rem; }
+  .footer-note .privacy strong { font-weight: 600; }
+
+  [hidden] { display: none !important; }
+</style>
+
+</head>
+<body>
+<main>
+  <header class="page-head">
+    <h1>Remarks Classifier</h1>
+    <p>Klasifikasi waterfall otomatis untuk kolom <strong>Remarks</strong> pada data validasi klaim (Aman / Validasi Doc Utama / Others Validation / Doc Non GL / Only Doc GL). Upload file Excel atau ZIP berisi banyak file — semua diproses langsung di browser kamu.</p>
+  </header>
+
+  <details class="settings" id="settingsPanel">
+    <summary>Pengaturan lanjutan</summary>
+    <div class="settings-grid">
+      <div class="field">
+        <label for="columnName">Nama kolom yang dicek</label>
+        <input type="text" id="columnName" value="Remarks" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="sheetName">Nama sheet (kosongkan untuk pakai sheet pertama)</label>
+        <input type="text" id="sheetName" placeholder="otomatis: sheet pertama" autocomplete="off">
+      </div>
+    </div>
+  </details>
+
+  <section class="card" id="uploadCard">
+    <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Pilih atau lepas file Excel atau ZIP">
+      <div class="big">Tarik &amp; lepas file .xlsx atau .zip di sini</div>
+      <div class="hint">atau klik untuk memilih file — bisa banyak file .xlsx sekaligus, atau satu/lebih file .zip berisi banyak .xlsx</div>
+      <input type="file" id="fileInput" multiple accept=".xlsx,.xls,.zip">
+    </div>
+
+    <ul class="filelist" id="fileList" hidden style="margin-top:14px;"></ul>
+
+    <div style="display:flex; align-items:center; gap:10px; margin-top:14px; flex-wrap:wrap;">
+      <button class="primary" id="processBtn" disabled>Proses &amp; Unduh</button>
+      <button class="ghost" id="resetBtn" hidden>Mulai ulang</button>
+      <span id="fileCountHint" style="color:var(--text-muted); font-size:0.82rem;"></span>
+    </div>
+
+    <div id="progressArea" hidden style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="log" id="logBox"></div>
+    </div>
+  </section>
+
+  <section id="resultsSection" hidden style="display:flex; flex-direction:column; gap:14px;"></section>
+
+  <section class="card" id="exampleCard">
+    <h2 style="font-size:1rem; margin-bottom:10px;">Contoh output <span style="color:var(--text-muted); font-weight:400; font-size:0.78rem;">(angka contoh, bukan hasil upload)</span></h2>
+    <div class="overflow-x">
+      <table class="waterfall">
+        <thead><tr><th>Kategori</th><th class="num">Jumlah</th><th class="num">Sisa</th></tr></thead>
+        <tbody>
+          <tr><td>All data</td><td class="num">120</td><td class="num"></td></tr>
+          <tr><td>Aman (tidak match Filter 1)</td><td class="num">20</td><td class="num"></td></tr>
+          <tr><td>Validasi Doc Utama (match Filter 1)</td><td class="num">100</td><td class="num"></td></tr>
+          <tr class="indent"><td>Others Validation (match Filter 2)</td><td class="num">10</td><td class="num">90</td></tr>
+          <tr class="indent"><td>Doc Non GL (match Filter 3)</td><td class="num">15</td><td class="num">75</td></tr>
+          <tr class="indent"><td>Only Doc GL (sisa akhir)</td><td class="num">75</td><td class="num"></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card footer-note">
+    <div class="privacy">🔒 <span><strong>Semua proses terjadi di browser kamu.</strong> File yang di-upload gak pernah dikirim ke server manapun — parsing, klasifikasi, sampai penulisan file hasil semuanya jalan lokal.</span></div>
+    <div>
+      <strong style="color:var(--text);">Cara kerja:</strong> tiap baris dicek berurutan — dulu Filter&nbsp;1 (5 frasa "Document belum diupload : ...") menentukan Aman vs Validasi Doc Utama, lalu Filter&nbsp;2 (6 frasa "Result : ...") memisahkan Others Validation, sisanya dicek Filter&nbsp;3 (4 frasa dokumen non-GL) untuk Doc Non GL vs Only Doc GL. Pencocokan pakai regex yang tahan spasi ganda/tab/newline dan tanda kutip/titik koma di sekitar frasa.
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  // -------------------------------------------------------------------
+  // 1. Phrase lists (kept identical in wording to classify_remarks.py)
+  // -------------------------------------------------------------------
+  var FILTER1_VALIDASI_DOC_UTAMA = [
+    "Document belum diupload : Form APS",
+    "Document belum diupload : Form NAPS",
+    "Document belum diupload : Form APS AHM",
+    "Document belum diupload : Surat Keterangan Isolasi",
+    "Document belum diupload : Billing Perawatan Asli"
+  ];
+  var FILTER2_OTHERS_VALIDATION = [
+    "Result : Diagnosa butuh konfirmasi dokter Garda Medika",
+    "Result : Memerlukan proses perhitungan excess oleh Tim Garda Medika",
+    "Result : Terdapat claim outstanding pada Peserta ini",
+    "Result : Seluruh diagnosa tidak dapat dijaminkan Garda Medika",
+    "Result : Medical Treatment memerlukan konfirmasi Dokter Garda Medika",
+    "Result : Hak kelas kamar membutuhkan konfirmasi Tim Garda Medika"
+  ];
+  var FILTER3_DOC_NON_GL = [
+    "Document belum diupload : Informasi Kronologis",
+    "Document belum diupload : Hasil Pemeriksaan Laboratorium (Darah dan Urin)",
+    "Document belum diupload : Foto Panoramik/ Expertise",
+    "Document belum diupload : Hasil Rontgent"
+  ];
+
+  function escapeRegex(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
+  function buildPattern(phrase) {
+    var tokens = phrase.split(/\s+/).filter(Boolean);
+    var pattern = tokens.map(escapeRegex).join("\\s*");
+    pattern = pattern.split("/").join("\\s*/\\s*");
+    return new RegExp(pattern, "i");
+  }
+
+  function compileAll(phrases) {
+    return phrases.map(function (p) { return [p, buildPattern(p)]; });
+  }
+
+  var FILTER1_COMPILED = compileAll(FILTER1_VALIDASI_DOC_UTAMA);
+  var FILTER2_COMPILED = compileAll(FILTER2_OTHERS_VALIDATION);
+  var FILTER3_COMPILED = compileAll(FILTER3_DOC_NON_GL);
+
+  function findMatches(text, compiledList) {
+    if (typeof text !== "string" || !text) return [];
+    var out = [];
+    for (var i = 0; i < compiledList.length; i++) {
+      if (compiledList[i][1].test(text)) out.push(compiledList[i][0]);
+    }
+    return out;
+  }
+
+  function classify(text) {
+    var m1 = findMatches(text, FILTER1_COMPILED);
+    if (m1.length === 0) return { category: "Aman", m1: m1, m2: [], m3: [] };
+    var m2 = findMatches(text, FILTER2_COMPILED);
+    if (m2.length) return { category: "Others Validation", m1: m1, m2: m2, m3: [] };
+    var m3 = findMatches(text, FILTER3_COMPILED);
+    if (m3.length) return { category: "Doc Non GL", m1: m1, m2: m2, m3: m3 };
+    return { category: "Only Doc GL", m1: m1, m2: m2, m3: m3 };
+  }
+
+  // -------------------------------------------------------------------
+  // 2. Excel-safety helpers
+  // -------------------------------------------------------------------
+  var ILLEGAL_XLSX_CHARS_RE = /[\x00-\x08\x0b\x0c\x0e-\x1f]/g;
+  function sanitizeForExcel(val) {
+    if (typeof val === "string") return val.replace(ILLEGAL_XLSX_CHARS_RE, "");
+    return val;
+  }
+
+  // Force every string cell in a worksheet to a plain string type, so a
+  // value that happens to start with "=" is never auto-detected as an
+  // Excel formula (the same fix applied in classify_remarks.py).
+  function forceStringCells(ws) {
+    Object.keys(ws).forEach(function (addr) {
+      if (addr[0] === "!") return;
+      var cell = ws[addr];
+      if (cell && typeof cell.v === "string") {
+        cell.t = "s";
+        if (cell.f) delete cell.f;
+      }
+    });
+  }
+
+  // -------------------------------------------------------------------
+  // 3. DOM references
+  // -------------------------------------------------------------------
+  var dropzone = document.getElementById("dropzone");
+  var fileInput = document.getElementById("fileInput");
+  var fileListEl = document.getElementById("fileList");
+  var processBtn = document.getElementById("processBtn");
+  var resetBtn = document.getElementById("resetBtn");
+  var fileCountHint = document.getElementById("fileCountHint");
+  var progressArea = document.getElementById("progressArea");
+  var progressFill = document.getElementById("progressFill");
+  var logBox = document.getElementById("logBox");
+  var resultsSection = document.getElementById("resultsSection");
+  var exampleCard = document.getElementById("exampleCard");
+  var columnNameInput = document.getElementById("columnName");
+  var sheetNameInput = document.getElementById("sheetName");
+  var settingsPanel = document.getElementById("settingsPanel");
+
+  // queue entries: { name, arrayBuffer, status: 'queued'|'working'|'done'|'error', message }
+  var queue = [];
+
+  function log(msg) {
+    var line = document.createElement("div");
+    line.textContent = msg;
+    logBox.appendChild(line);
+    logBox.scrollTop = logBox.scrollHeight;
+  }
+
+  function fmtSize(bytes) {
+    if (bytes < 1024) return bytes + " B";
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+    return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+  }
+
+  function renderFileList() {
+    if (queue.length === 0) {
+      fileListEl.hidden = true;
+      fileListEl.innerHTML = "";
+      fileCountHint.textContent = "";
+      processBtn.disabled = true;
+      return;
+    }
+    fileListEl.hidden = false;
+    fileListEl.innerHTML = "";
+    queue.forEach(function (item) {
+      var li = document.createElement("li");
+      var fname = document.createElement("span");
+      fname.className = "fname";
+      fname.textContent = item.name;
+      var fsize = document.createElement("span");
+      fsize.className = "fsize";
+      fsize.textContent = fmtSize(item.arrayBuffer.byteLength);
+      var badge = document.createElement("span");
+      badge.className = "badge " + item.status;
+      var labels = { queued: "Menunggu", working: "Diproses", done: "Selesai", error: "Error" };
+      badge.textContent = item.status === "error" ? (item.message || "Error") : labels[item.status];
+      li.appendChild(fname);
+      li.appendChild(fsize);
+      li.appendChild(badge);
+      fileListEl.appendChild(li);
+    });
+    fileCountHint.textContent = queue.length + " file .xlsx siap diproses";
+    processBtn.disabled = queue.some(function (i) { return i.status === "working"; });
+  }
+
+  function addFiles(newEntries) {
+    newEntries.forEach(function (e) {
+      if (!queue.some(function (q) { return q.name === e.name && q.arrayBuffer.byteLength === e.arrayBuffer.byteLength; })) {
+        queue.push(e);
+      }
+    });
+    renderFileList();
+  }
+
+  function isXlsxName(name) {
+    var lower = name.toLowerCase();
+    return (lower.endsWith(".xlsx") || lower.endsWith(".xls")) && !name.startsWith("~$");
+  }
+
+  async function handleIncomingFiles(fileObjs) {
+    for (var i = 0; i < fileObjs.length; i++) {
+      var f = fileObjs[i];
+      var lower = f.name.toLowerCase();
+      if (lower.endsWith(".zip")) {
+        try {
+          var zip = await JSZip.loadAsync(f);
+          var names = Object.keys(zip.files);
+          var found = [];
+          for (var j = 0; j < names.length; j++) {
+            var entryName = names[j];
+            var entry = zip.files[entryName];
+            var baseName = entryName.split("/").pop();
+            if (entry.dir || !isXlsxName(baseName) || entryName.indexOf("__MACOSX") !== -1) continue;
+            var buf = await entry.async("arraybuffer");
+            found.push({ name: baseName, arrayBuffer: buf, status: "queued" });
+          }
+          if (found.length === 0) {
+            log('"' + f.name + '": tidak ada file .xlsx di dalam ZIP ini.');
+          } else {
+            addFiles(found);
+          }
+        } catch (err) {
+          log('Gagal membuka ZIP "' + f.name + '": ' + err.message);
+        }
+      } else if (isXlsxName(f.name)) {
+        var buf2 = await f.arrayBuffer();
+        addFiles([{ name: f.name, arrayBuffer: buf2, status: "queued" }]);
+      } else {
+        log('"' + f.name + '" dilewati (bukan .xlsx/.xls/.zip).');
+      }
+    }
+  }
+
+  dropzone.addEventListener("click", function () { fileInput.click(); });
+  dropzone.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileInput.click(); }
+  });
+  fileInput.addEventListener("change", function (e) {
+    handleIncomingFiles(Array.from(e.target.files));
+    fileInput.value = "";
+  });
+  ["dragenter", "dragover"].forEach(function (evt) {
+    dropzone.addEventListener(evt, function (e) { e.preventDefault(); dropzone.classList.add("drag"); });
+  });
+  ["dragleave", "drop"].forEach(function (evt) {
+    dropzone.addEventListener(evt, function (e) { e.preventDefault(); dropzone.classList.remove("drag"); });
+  });
+  dropzone.addEventListener("drop", function (e) {
+    var files = e.dataTransfer && e.dataTransfer.files ? Array.from(e.dataTransfer.files) : [];
+    handleIncomingFiles(files);
+  });
+
+  function yieldToUI() {
+    return new Promise(function (resolve) { setTimeout(resolve, 0); });
+  }
+
+  function findHeaderKey(rowObjectKeys, wanted) {
+    var wantedNorm = wanted.trim().toLowerCase();
+    for (var i = 0; i < rowObjectKeys.length; i++) {
+      if (rowObjectKeys[i].trim().toLowerCase() === wantedNorm) return rowObjectKeys[i];
+    }
+    return null;
+  }
+
+  // -------------------------------------------------------------------
+  // 4. Per-file processing -> returns { blob, filename, counts } or throws
+  // -------------------------------------------------------------------
+  async function processOneFile(item, columnName, sheetName) {
+    log('Membaca "' + item.name + '"...');
+    await yieldToUI();
+    var wb;
+    try {
+      wb = XLSX.read(item.arrayBuffer, { type: "array" });
+    } catch (err) {
+      throw new Error("File Excel tidak bisa dibaca (" + err.message + ")");
+    }
+
+    var chosenSheet = sheetName && wb.SheetNames.indexOf(sheetName) !== -1 ? sheetName : wb.SheetNames[0];
+    var ws = wb.Sheets[chosenSheet];
+    var headerRows = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false });
+    if (!headerRows.length) throw new Error('Sheet "' + chosenSheet + '" kosong.');
+    var headers = headerRows[0].map(function (h) { return h == null ? "" : String(h); });
+
+    var actualColumn = findHeaderKey(headers, columnName);
+    if (!actualColumn) {
+      throw new Error('Kolom "' + columnName + '" tidak ditemukan. Kolom yang ada: ' + headers.join(", "));
+    }
+
+    var rows = XLSX.utils.sheet_to_json(ws, { defval: "", raw: false });
+    var total = rows.length;
+    log("  " + total + " baris ditemukan di sheet \"" + chosenSheet + "\".");
+    await yieldToUI();
+
+    var outRows = [];
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      var cleanRow = {};
+      headers.forEach(function (h) {
+        if (h === "") return;
+        cleanRow[h] = sanitizeForExcel(row[h] === undefined ? "" : row[h]);
+      });
+      var remarksVal = cleanRow[actualColumn];
+      var result = classify(typeof remarksVal === "string" ? remarksVal : "");
+      cleanRow["Kategori"] = result.category;
+      cleanRow["Matched_Filter1_ValidasiDocUtama"] = result.m1.join("; ");
+      cleanRow["Matched_Filter2_OthersValidation"] = result.m2.join("; ");
+      cleanRow["Matched_Filter3_DocNonGL"] = result.m3.join("; ");
+      outRows.push(cleanRow);
+      if (i % 200 === 0) {
+        log("  Klasifikasi baris " + (i + 1) + "/" + total + "...");
+        await yieldToUI();
+      }
+    }
+    log("  Selesai klasifikasi " + total + " baris.");
+    await yieldToUI();
+
+    var nAman = 0, nOthers = 0, nDocNonGl = 0, nOnlyDocGl = 0;
+    outRows.forEach(function (r) {
+      if (r.Kategori === "Aman") nAman++;
+      else if (r.Kategori === "Others Validation") nOthers++;
+      else if (r.Kategori === "Doc Non GL") nDocNonGl++;
+      else if (r.Kategori === "Only Doc GL") nOnlyDocGl++;
+    });
+    var nValidasiDoc = total - nAman;
+    var sisaAfterOthers = nValidasiDoc - nOthers;
+
+    var outHeader = headers.filter(function (h) { return h !== ""; })
+      .concat(["Kategori", "Matched_Filter1_ValidasiDocUtama", "Matched_Filter2_OthersValidation", "Matched_Filter3_DocNonGL"]);
+
+    var amanRows = outRows.filter(function (r) { return r.Kategori === "Aman"; });
+    var othersRows = outRows.filter(function (r) { return r.Kategori === "Others Validation"; });
+    var docNonGlRows = outRows.filter(function (r) { return r.Kategori === "Doc Non GL"; });
+    var onlyDocGlRows = outRows.filter(function (r) { return r.Kategori === "Only Doc GL"; });
+
+    log("  Menulis 6 sheet Excel...");
+    await yieldToUI();
+
+    var hasilAoa = [
+      ["Kategori", "Jumlah", "Sisa"],
+      ["All data", total, ""],
+      ["Aman (tidak match Filter 1)", nAman, ""],
+      ["Validasi Doc Utama (match Filter 1)", nValidasiDoc, ""],
+      ["  - Others Validation (match Filter 2)", nOthers, sisaAfterOthers],
+      ["  - Doc Non GL (match Filter 3)", nDocNonGl, sisaAfterOthers - nDocNonGl],
+      ["  - Only Doc GL (sisa akhir)", nOnlyDocGl, ""]
+    ];
+
+    var wbOut = XLSX.utils.book_new();
+    var wsHasil = XLSX.utils.aoa_to_sheet(hasilAoa);
+    forceStringCells(wsHasil);
+    XLSX.utils.book_append_sheet(wbOut, wsHasil, "Hasil");
+
+    function appendSheet(name, dataRows) {
+      var ws2 = XLSX.utils.json_to_sheet(dataRows, { header: outHeader });
+      forceStringCells(ws2);
+      XLSX.utils.book_append_sheet(wbOut, ws2, name);
+    }
+    appendSheet("Aman", amanRows);
+    appendSheet("Others Validation", othersRows);
+    appendSheet("Doc Non GL", docNonGlRows);
+    appendSheet("Only Doc GL", onlyDocGlRows);
+    appendSheet("All Data (tagged)", outRows);
+
+    var wbArray = XLSX.write(wbOut, { bookType: "xlsx", type: "array" });
+    var blob = new Blob([wbArray], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+    log('  Selesai: "' + item.name + '" -> Aman ' + nAman + ", Others Validation " + nOthers + ", Doc Non GL " + nDocNonGl + ", Only Doc GL " + nOnlyDocGl + ".");
+
+    var baseName = item.name.replace(/\.(xlsx|xls)$/i, "");
+    return {
+      blob: blob,
+      filename: "hasil_klasifikasi_" + baseName + ".xlsx",
+      sourceName: item.name,
+      counts: {
+        total: total, aman: nAman, validasiDoc: nValidasiDoc,
+        others: nOthers, sisaAfterOthers: sisaAfterOthers,
+        docNonGl: nDocNonGl, onlyDocGl: nOnlyDocGl
+      }
+    };
+  }
+
+  // -------------------------------------------------------------------
+  // 5. Results rendering
+  // -------------------------------------------------------------------
+  function renderResultCard(result) {
+    var c = result.counts;
+    var card = document.createElement("div");
+    card.className = "card result-card";
+
+    var row = document.createElement("div");
+    row.className = "fname-row";
+    var fname = document.createElement("span");
+    fname.className = "fname";
+    fname.textContent = result.sourceName;
+    var totalSpan = document.createElement("span");
+    totalSpan.style.color = "var(--text-muted)";
+    totalSpan.style.fontSize = "0.8rem";
+    totalSpan.textContent = c.total + " baris";
+    row.appendChild(fname);
+    row.appendChild(totalSpan);
+    card.appendChild(row);
+
+    var chiprow = document.createElement("div");
+    chiprow.className = "chiprow";
+    [
+      ["aman", "Aman", c.aman],
+      ["others", "Others Validation", c.others],
+      ["docnongl", "Doc Non GL", c.docNonGl],
+      ["onlydocgl", "Only Doc GL", c.onlyDocGl]
+    ].forEach(function (t) {
+      var chip = document.createElement("div");
+      chip.className = "chip " + t[0];
+      chip.innerHTML = '<span class="n">' + t[2] + '</span><span>' + t[1] + '</span>';
+      chiprow.appendChild(chip);
+    });
+    card.appendChild(chiprow);
+
+    var wrap = document.createElement("div");
+    wrap.className = "overflow-x";
+    wrap.innerHTML =
+      '<table class="waterfall"><thead><tr><th>Kategori</th><th class="num">Jumlah</th><th class="num">Sisa</th></tr></thead><tbody>' +
+      "<tr><td>All data</td><td class=\"num\">" + c.total + "</td><td class=\"num\"></td></tr>" +
+      "<tr><td>Aman (tidak match Filter 1)</td><td class=\"num\">" + c.aman + "</td><td class=\"num\"></td></tr>" +
+      "<tr><td>Validasi Doc Utama (match Filter 1)</td><td class=\"num\">" + c.validasiDoc + "</td><td class=\"num\"></td></tr>" +
+      "<tr class=\"indent\"><td>Others Validation (match Filter 2)</td><td class=\"num\">" + c.others + "</td><td class=\"num\">" + c.sisaAfterOthers + "</td></tr>" +
+      "<tr class=\"indent\"><td>Doc Non GL (match Filter 3)</td><td class=\"num\">" + c.docNonGl + "</td><td class=\"num\">" + (c.sisaAfterOthers - c.docNonGl) + "</td></tr>" +
+      "<tr class=\"indent\"><td>Only Doc GL (sisa akhir)</td><td class=\"num\">" + c.onlyDocGl + "</td><td class=\"num\"></td></tr>" +
+      "</tbody></table>";
+    card.appendChild(wrap);
+
+    resultsSection.appendChild(card);
+  }
+
+  // -------------------------------------------------------------------
+  // 6. Download
+  // -------------------------------------------------------------------
+  async function offerDownload(filename, blob) {
+    try {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(url); }, 4000);
+      log('Berhasil diunduh: "' + filename + '".');
+    } catch (err) {
+      log("Gagal mengunduh: " + (err && err.message ? err.message : String(err)));
+    }
+  }
+
+  // -------------------------------------------------------------------
+  // 7. Main process button handler
+  // -------------------------------------------------------------------
+  var downloadBtn = null;
+
+  processBtn.addEventListener("click", async function () {
+    if (queue.length === 0) return;
+    exampleCard.hidden = true;
+    settingsPanel.open = false;
+    processBtn.disabled = true;
+    resetBtn.hidden = true;
+    progressArea.hidden = false;
+    logBox.innerHTML = "";
+    progressFill.style.width = "0%";
+    resultsSection.hidden = false;
+    resultsSection.innerHTML = "";
+
+    var columnName = columnNameInput.value.trim() || "Remarks";
+    var sheetName = sheetNameInput.value.trim();
+
+    var results = [];
+    var errors = [];
+
+    for (var i = 0; i < queue.length; i++) {
+      queue[i].status = "working";
+      renderFileList();
+      try {
+        var result = await processOneFile(queue[i], columnName, sheetName);
+        queue[i].status = "done";
+        results.push(result);
+        renderResultCard(result);
+      } catch (err) {
+        queue[i].status = "error";
+        queue[i].message = err.message;
+        errors.push(queue[i].name + ": " + err.message);
+        log('Error di "' + queue[i].name + '": ' + err.message);
+      }
+      progressFill.style.width = Math.round(((i + 1) / queue.length) * 100) + "%";
+      renderFileList();
+      await yieldToUI();
+    }
+
+    if (results.length === 0) {
+      log("Tidak ada file yang berhasil diproses.");
+      resetBtn.hidden = false;
+      processBtn.disabled = queue.length === 0;
+      return;
+    }
+
+    var dlWrap = document.createElement("div");
+    dlWrap.style.display = "flex";
+    dlWrap.style.gap = "10px";
+    dlWrap.style.flexWrap = "wrap";
+    downloadBtn = document.createElement("button");
+    downloadBtn.className = "primary";
+
+    if (results.length === 1) {
+      downloadBtn.textContent = "Unduh " + results[0].filename;
+      downloadBtn.addEventListener("click", function () {
+        offerDownload(results[0].filename, results[0].blob);
+      });
+    } else {
+      downloadBtn.textContent = "Unduh semua (.zip, " + results.length + " file)";
+      downloadBtn.addEventListener("click", async function () {
+        downloadBtn.disabled = true;
+        downloadBtn.textContent = "Menyiapkan ZIP...";
+        var zip = new JSZip();
+        results.forEach(function (r) { zip.file(r.filename, r.blob); });
+        var zipBlob = await zip.generateAsync({ type: "blob" });
+        downloadBtn.disabled = false;
+        downloadBtn.textContent = "Unduh semua (.zip, " + results.length + " file)";
+        offerDownload("hasil_klasifikasi_semua.zip", zipBlob);
+      });
+    }
+    dlWrap.appendChild(downloadBtn);
+    resultsSection.insertBefore(dlWrap, resultsSection.firstChild);
+
+    if (errors.length) {
+      var errCard = document.createElement("div");
+      errCard.className = "card";
+      errCard.style.borderColor = "var(--danger)";
+      errCard.innerHTML = "<strong style=\"color:var(--danger);\">" + errors.length + " file gagal diproses:</strong><div style=\"margin-top:6px; font-size:0.82rem; color:var(--text-muted);\">" +
+        errors.map(function (e) { return escapeHtml(e); }).join("<br>") + "</div>";
+      resultsSection.appendChild(errCard);
+    }
+
+    resetBtn.hidden = false;
+  });
+
+  function escapeHtml(s) {
+    var div = document.createElement("div");
+    div.textContent = s;
+    return div.innerHTML;
+  }
+
+  resetBtn.addEventListener("click", function () {
+    queue = [];
+    renderFileList();
+    resultsSection.hidden = true;
+    resultsSection.innerHTML = "";
+    progressArea.hidden = true;
+    logBox.innerHTML = "";
+    exampleCard.hidden = false;
+    resetBtn.hidden = true;
+    processBtn.disabled = true;
+  });
+
+  renderFileList();
+})();
+</script>
+</body>
+</html>
